@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="scroll-smooth">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -39,7 +39,6 @@
                     
                     <div class="flex flex-wrap items-center gap-x-6 gap-y-3 text-sm font-medium text-zinc-500">
                         <div class="flex items-center gap-2">
-                        
                             Oleh <span class="text-zinc-900 font-bold">{{ $script->user->name ?? 'Unknown' }}</span>
                         </div>
                         <div class="flex items-center gap-1.5" title="Diperbarui pada {{ $script->updated_at->format('d M Y, H:i') }}">
@@ -51,13 +50,23 @@
                     </div>
                 </div>
 
+                @if($script->shortstory)
+                <div class="mb-12 flex flex-col md:flex-row gap-6 items-start md:items-center justify-between bg-zinc-50 p-6 rounded-2xl border border-zinc-100">
+                    <div class="prose max-w-none text-zinc-600 text-sm font-medium leading-relaxed">
+                        {!! nl2br(e($script->shortstory)) !!}
+                    </div>
+                    <a href="#area-download" class="shrink-0 inline-flex justify-center items-center px-6 py-3.5 bg-zinc-900 text-white text-sm font-bold rounded-xl hover:bg-zinc-800 transition-all shadow-sm active:scale-95 w-full md:w-auto">
+                        ↓ Langsung Download
+                    </a>
+                </div>
+                @endif
+
                 <div class="mb-12">
                     <h2 class="text-2xl font-black text-zinc-900 mb-6 border-b border-zinc-100 pb-4">
                         Fitur
                     </h2>
                 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 mb-8">
-                        
                         <div>
                             <h3 class="text-lg font-bold text-zinc-900 mb-4">Support Voice</h3>
                             <ul class="list-disc pl-5 space-y-2.5 text-zinc-700 font-medium text-sm marker:text-zinc-400">
@@ -87,9 +96,7 @@
                                 <li>File dibuat sendiri</li>
                             </ul>
                         </div>
-                
                     </div>
-                
                 </div>
 
                 <div class="space-y-3 mb-8">
@@ -115,40 +122,42 @@
                     </a>
                 </div>
 
-                <div>
-                    <h2 class="text-xl font-bold text-zinc-900 mb-4 tracking-tight">Unduh Script</h2>
+                <div id="area-download" class="scroll-mt-28">
+                    <h2 class="text-xl font-bold text-zinc-900 mb-6 tracking-tight">Unduh Script</h2>
                     
-                    <div class="border border-zinc-200 rounded-2xl overflow-hidden shadow-sm">
+                    <div class="border border-zinc-200 rounded-2xl overflow-hidden shadow-sm bg-white">
                         <table class="w-full border-collapse">
                             <thead>
-                                <tr class="bg-zinc-50/50 text-xs uppercase tracking-wider text-zinc-500 border-b border-zinc-200">
-                                    <th class="px-6 py-4 font-bold text-center">Replace Variant</th>
-                                    <th class="px-6 py-4 font-bold text-center w-28">Image</th>
-                                    <th class="px-6 py-4 font-bold text-center w-40">Action</th>
+                                <tr class="bg-white text-[11px] font-bold uppercase tracking-widest text-zinc-400 border-b border-zinc-200">
+                                    <th class="px-6 py-4 text-center">Replace Variant</th>
+                                    <th class="px-6 py-4 text-center w-28">Image</th>
+                                    <th class="px-6 py-4 text-center w-40">Action</th>
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-zinc-100">
                                 @forelse($script->links()->get() as $link)
-                                    <tr class="hover:bg-zinc-50 transition-colors duration-200">
-                                        <td class="px-6 py-4 align-middle text-center">
-                                            <span class="font-bold text-zinc-800">{{ $link->replace_name }}</span>
+                                    <tr class="hover:bg-zinc-50/50 transition-colors duration-200">
+                                        
+                                        <td class="px-6 py-5 align-middle text-center">
+                                            <span class="font-black text-zinc-900 text-sm">{{ $link->replace_name }}</span>
                                         </td>
                                         
-                                        <td class="px-6 py-4 align-middle text-center">
+                                        <td class="px-6 py-5 align-middle text-center">
                                             @if($link->image)
-                                                <img src="{{ Storage::url($link->image) }}" alt="{{ $link->replace_name }}" class="w-10 h-10 rounded-full object-cover mx-auto border border-zinc-200 shadow-sm transition-transform hover:scale-150 cursor-pointer">
+                                                <img src="{{ Storage::url($link->image) }}" alt="{{ $link->replace_name }}" class="w-11 h-11 rounded-full object-cover mx-auto shadow-sm transition-transform hover:scale-110 cursor-pointer">
                                             @else
-                                                <div class="w-10 h-10 rounded-full bg-zinc-100 mx-auto flex items-center justify-center border border-zinc-200 text-zinc-400 text-xs shadow-sm" title="Tidak ada gambar">
+                                                <div class="w-11 h-11 rounded-full bg-zinc-100 mx-auto flex items-center justify-center border border-zinc-200 text-zinc-400 text-xs shadow-sm">
                                                     <span>📷</span>
                                                 </div>
                                             @endif
                                         </td>
 
-                                        <td class="px-6 py-4 align-middle text-center">
-                                            <a href="{{ $link->url }}" target="_blank" class="inline-flex justify-center items-center px-5 py-2.5 text-black text-sm font-bold rounded-xl hover:-translate-y-0.5 transition-all shadow-sm active:scale-95">
+                                        <td class="px-6 py-5 align-middle text-center">
+                                            <a href="{{ $link->url }}" target="_blank" class="inline-flex justify-center items-center px-6 py-2 bg-white border-2 border-zinc-100 text-zinc-900 text-sm font-bold rounded-xl hover:border-zinc-300 hover:bg-zinc-50 transition-all shadow-sm active:scale-95 whitespace-nowrap">
                                                 Download
                                             </a>
                                         </td>
+                                        
                                     </tr>
                                 @empty
                                     <tr>
@@ -208,10 +217,8 @@
                     <div class="space-y-6 sm:space-y-8">
                         @forelse($script->comments as $comment)
                             <div class="flex justify-between items-start gap-4">
-                                
                                 <div class="flex gap-3 sm:gap-4">
                                     <img src="https://ui-avatars.com/api/?name={{ urlencode($comment->user->name ?? 'User') }}&background=f4f4f5&color=18181b" class="w-10 h-10 rounded-full shrink-0 border border-zinc-200 mt-1">
-                                    
                                     <div>
                                         <div class="flex items-baseline gap-2 mb-1.5">
                                             <h4 class="font-bold text-zinc-900 text-sm">{{ $comment->user->name ?? 'Unknown User' }}</h4>
@@ -236,7 +243,6 @@
                                         </form>
                                     @endif
                                 @endauth
-
                             </div>
                         @empty
                             <div class="text-center py-12">
