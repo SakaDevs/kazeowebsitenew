@@ -22,8 +22,8 @@ Route::get('/', function () {
 
 
 Route::get('/script/{script:slug}', function (\App\Models\Script $script) {
+    $script->timestamps = false;
     $script->increment('views'); 
-    
     // Load relasi termasuk komentar (diurutkan dari yang terbaru) beserta data user-nya
     $script->load([
         'category', 

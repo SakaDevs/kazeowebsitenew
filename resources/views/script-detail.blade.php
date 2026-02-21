@@ -41,8 +41,8 @@
                         <div class="flex items-center gap-2">
                             Oleh <span class="text-zinc-900 font-bold">{{ $script->user->name ?? 'Unknown' }}</span>
                         </div>
-                        <div class="flex items-center gap-1.5" title="Diperbarui pada {{ $script->updated_at->format('d M Y, H:i') }}">
-                            <span>🕒</span> Diperbarui {{ $script->updated_at->diffForHumans() }}
+                        <div class="flex items-center gap-1.5" title="Diperbarui pada {{ \Carbon\Carbon::parse($script->updated_at)->format('d M Y, H:i') }}">
+                            <span>🕒</span> Diperbarui {{ \Carbon\Carbon::parse($script->updated_at)->diffForHumans() }}
                         </div>
                         <div class="flex items-center gap-1.5" title="Dilihat">
                             <span>👁️</span> {{ number_format($script->views) }}x dilihat
@@ -50,16 +50,20 @@
                     </div>
                 </div>
 
-                @if($script->shortstory)
-                <div class="mb-12 flex flex-col md:flex-row gap-6 items-start md:items-center justify-between bg-zinc-50 p-6 rounded-2xl border border-zinc-100">
+                @if($script->short_story)
+                <div class="mb-6 bg-zinc-50 p-6 rounded-2xl border border-zinc-100">
                     <div class="prose max-w-none text-zinc-600 text-sm font-medium leading-relaxed">
-                        {!! nl2br(e($script->shortstory)) !!}
+                        {!! nl2br(e($script->short_story)) !!}
                     </div>
-                    <a href="#area-download" class="shrink-0 inline-flex justify-center items-center px-6 py-3.5 bg-zinc-900 text-white text-sm font-bold rounded-xl hover:bg-zinc-800 transition-all shadow-sm active:scale-95 w-full md:w-auto">
-                        ↓ Langsung Download
-                    </a>
                 </div>
                 @endif
+                
+                <div class="mb-12">
+                    <a href="#area-download" class="inline-flex justify-center items-center gap-2 px-8 py-3.5 bg-zinc-900 text-white text-sm font-bold rounded-xl hover:bg-zinc-800 transition-all shadow-sm active:scale-95 w-full sm:w-auto">
+                        <svg class="w-4 h-4 animate-bounce" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path></svg>
+                        Langsung Download
+                    </a>
+                </div>
 
                 <div class="mb-12">
                     <h2 class="text-2xl font-black text-zinc-900 mb-6 border-b border-zinc-100 pb-4">
@@ -125,49 +129,51 @@
                 <div id="area-download" class="scroll-mt-28">
                     <h2 class="text-xl font-bold text-zinc-900 mb-6 tracking-tight">Unduh Script</h2>
                     
-                    <div class="border border-zinc-200 rounded-2xl overflow-hidden shadow-sm bg-white">
-                        <table class="w-full border-collapse">
-                            <thead>
-                                <tr class="bg-white text-[11px] font-bold uppercase tracking-widest text-zinc-400 border-b border-zinc-200">
-                                    <th class="px-6 py-4 text-center">Replace Variant</th>
-                                    <th class="px-6 py-4 text-center w-28">Image</th>
-                                    <th class="px-6 py-4 text-center w-40">Action</th>
-                                </tr>
-                            </thead>
-                            <tbody class="divide-y divide-zinc-100">
-                                @forelse($script->links()->get() as $link)
-                                    <tr class="hover:bg-zinc-50/50 transition-colors duration-200">
-                                        
-                                        <td class="px-6 py-5 align-middle text-center">
-                                            <span class="font-black text-zinc-900 text-sm">{{ $link->replace_name }}</span>
-                                        </td>
-                                        
-                                        <td class="px-6 py-5 align-middle text-center">
-                                            @if($link->image)
-                                                <img src="{{ Storage::url($link->image) }}" alt="{{ $link->replace_name }}" class="w-11 h-11 rounded-full object-cover mx-auto shadow-sm transition-transform hover:scale-110 cursor-pointer">
-                                            @else
-                                                <div class="w-11 h-11 rounded-full bg-zinc-100 mx-auto flex items-center justify-center border border-zinc-200 text-zinc-400 text-xs shadow-sm">
-                                                    <span>📷</span>
-                                                </div>
-                                            @endif
-                                        </td>
+                    <div class="border border-zinc-200 rounded-2xl shadow-sm bg-white overflow-hidden">
+                        <div class="overflow-x-auto w-full">
+                            <table class="w-full border-collapse whitespace-nowrap text-sm">
+                                <thead>
+                                    <tr class="bg-zinc-50/50 text-[10px] md:text-[11px] font-bold uppercase tracking-widest text-zinc-500 border-b border-zinc-200">
+                                        <th class="px-4 md:px-6 py-4 text-center">Replace Variant</th>
+                                        <th class="px-4 md:px-6 py-4 text-center">Image</th>
+                                        <th class="px-4 md:px-6 py-4 text-center">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-zinc-100">
+                                    @forelse($script->links()->get() as $link)
+                                        <tr class="hover:bg-zinc-50/50 transition-colors duration-200">
+                                            
+                                            <td class="px-4 md:px-6 py-4 md:py-5 align-middle text-center">
+                                                <span class="font-black text-zinc-900">{{ $link->replace_name }}</span>
+                                            </td>
+                                            
+                                            <td class="px-4 md:px-6 py-4 md:py-5 align-middle text-center">
+                                                @if($link->image)
+                                                    <img src="{{ Storage::url($link->image) }}" alt="{{ $link->replace_name }}" class="w-10 h-10 md:w-11 md:h-11 rounded-full object-cover mx-auto shadow-sm transition-transform hover:scale-110 cursor-pointer">
+                                                @else
+                                                    <div class="w-10 h-10 md:w-11 md:h-11 rounded-full bg-zinc-100 mx-auto flex items-center justify-center border border-zinc-200 text-zinc-400 text-xs shadow-sm">
+                                                        <span>📷</span>
+                                                    </div>
+                                                @endif
+                                            </td>
 
-                                        <td class="px-6 py-5 align-middle text-center">
-                                            <a href="{{ $link->url }}" target="_blank" class="inline-flex justify-center items-center px-6 py-2 bg-white border-2 border-zinc-100 text-zinc-900 text-sm font-bold rounded-xl hover:border-zinc-300 hover:bg-zinc-50 transition-all shadow-sm active:scale-95 whitespace-nowrap">
-                                                Download
-                                            </a>
-                                        </td>
-                                        
-                                    </tr>
-                                @empty
-                                    <tr>
-                                        <td colspan="3" class="px-6 py-12 text-center text-zinc-500 font-medium bg-zinc-50/50">
-                                            Link download belum tersedia untuk script ini.
-                                        </td>
-                                    </tr>
-                                @endforelse
-                            </tbody>
-                        </table>
+                                            <td class="px-4 md:px-6 py-4 md:py-5 align-middle text-center">
+                                                <a href="{{ $link->url }}" target="_blank" class="inline-flex justify-center items-center px-5 md:px-6 py-2 bg-white border-2 border-zinc-200 text-zinc-900 text-xs md:text-sm font-bold rounded-xl hover:border-zinc-300 hover:bg-zinc-50 transition-all shadow-sm active:scale-95">
+                                                    Download
+                                                </a>
+                                            </td>
+                                            
+                                        </tr>
+                                    @empty
+                                        <tr>
+                                            <td colspan="3" class="px-4 md:px-6 py-8 md:py-12 text-center text-zinc-500 font-medium bg-zinc-50/50">
+                                                Link download belum tersedia untuk script ini.
+                                            </td>
+                                        </tr>
+                                    @endforelse
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
 
