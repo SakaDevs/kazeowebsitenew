@@ -51,9 +51,15 @@
                 </div>
 
                 @if($script->short_story)
-                <div class="mb-6 bg-zinc-50 p-6 rounded-2xl border border-zinc-100">
-                    <div class="prose max-w-none text-zinc-600 text-sm font-medium leading-relaxed">
-                        {!! nl2br(e($script->short_story)) !!}
+                <div class="mb-8">
+                    <h2 class="text-xl font-black text-zinc-900 mb-4 tracking-tight">
+                        Short Story
+                    </h2>
+                    
+                    <div class="bg-zinc-50 p-6 rounded-2xl border border-zinc-100 shadow-sm">
+                        <div class="prose max-w-none text-zinc-600 text-sm font-medium leading-relaxed">
+                            {!! nl2br(e($script->short_story)) !!}
+                        </div>
                     </div>
                 </div>
                 @endif

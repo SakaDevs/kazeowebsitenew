@@ -117,7 +117,7 @@ class ScriptController extends Controller
             // 'slug' => Str::slug($request->title) . '-' . Str::random(5),
             'category_id' => $request->category_id,
             'description' => $request->description,
-            'short_story' => Str::limit(strip_tags($request->description), 100),
+            'short_story' => $request->description,
             'image' => $mainImagePath,
         ]);
 
