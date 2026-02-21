@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pencarian: {{ $query }} - Kazeo Official</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+    <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}?v=3">
 </head>
 <body class="bg-zinc-50 pt-24 pb-12">
     <x-navbar/>

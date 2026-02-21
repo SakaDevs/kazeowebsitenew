@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ $script->title }} - Kazeo Official</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+    <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}?v=3">
 </head>
 <body class="bg-zinc-50 pt-24 pb-20">
     <x-navbar/>
@@ -50,18 +51,46 @@
                     </div>
                 </div>
 
-                @if($script->short_story)
+                @if($script->description)
                 <div class="mb-8">
                     <h2 class="text-xl font-black text-zinc-900 mb-4 tracking-tight">
                         Short Story
                     </h2>
                     
-                    <div class="bg-zinc-50 p-6 rounded-2xl border border-zinc-100 shadow-sm">
-                        <div class="prose max-w-none text-zinc-600 text-sm font-medium leading-relaxed">
-                            {!! nl2br(e($script->short_story)) !!}
+                    <div class="bg-zinc-50 p-6 rounded-2xl border border-zinc-100 shadow-sm relative">
+                        <div id="story-content" class="prose max-w-none text-zinc-600 text-sm font-medium leading-relaxed line-clamp-3 transition-all duration-300">
+                            {!! nl2br(e($script->description)) !!}
+                        </div>
+                        
+                        <div class="mt-4 pt-4 border-t border-zinc-200/60">
+                            <button id="toggle-story-btn" onclick="toggleStory()" class="inline-flex items-center gap-1.5 text-zinc-900 font-bold text-sm hover:text-blue-600 transition-colors group">
+                                <span id="toggle-text">Baca Selengkapnya</span>
+                                <svg id="toggle-icon" class="w-4 h-4 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                                </svg>
+                            </button>
                         </div>
                     </div>
                 </div>
+
+                <script>
+                    function toggleStory() {
+                        const content = document.getElementById('story-content');
+                        const text = document.getElementById('toggle-text');
+                        const icon = document.getElementById('toggle-icon');
+
+                        // Cek apakah teks sedang tertutup (punya class line-clamp-3)
+                        if (content.classList.contains('line-clamp-3')) {
+                            content.classList.remove('line-clamp-3'); // Buka teks full
+                            text.textContent = 'Tutup Cerita';        // Ubah tulisan tombol
+                            icon.classList.add('rotate-180');         // Putar panah ke atas
+                        } else {
+                            content.classList.add('line-clamp-3');    // Tutup teks kembali
+                            text.textContent = 'Baca Selengkapnya';   // Kembalikan tulisan tombol
+                            icon.classList.remove('rotate-180');      // Putar panah ke bawah
+                        }
+                    }
+                </script>
                 @endif
                 
                 <div class="mb-12">

@@ -6,6 +6,7 @@
         <meta name="csrf-token" content="{{ csrf_token() }}">
         <title>{{ config('app.name', 'Kazeo Official') }} - Authentikasi</title>
         @vite(['resources/css/app.css', 'resources/js/app.js'])
+        <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}?v=3">
     </head>
     
     <body class="bg-zinc-50 pt-24 pb-12 flex flex-col min-h-screen">

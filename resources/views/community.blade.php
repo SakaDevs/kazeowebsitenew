@@ -15,6 +15,7 @@
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #e4e4e7; border-radius: 4px; }
         .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #d4d4d8; }
     </style>
+    <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}?v=3">
 </head>
 <body class="bg-zinc-50 pt-24 pb-12">
     <x-navbar/>
