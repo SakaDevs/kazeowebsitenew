@@ -53,7 +53,7 @@ class ScriptController extends Controller
             'user_id' => auth()->id(),
             'description' => $request->description,
             // Tambahkan baris ini untuk memotong deskripsi secara otomatis:
-            'short_story' => Str::limit(strip_tags($request->description), 100),
+            'short_story' => $request->description,
             'image' => $mainImagePath,
         ]);
 

@@ -51,7 +51,6 @@
                     </div>
                 </div>
 
-                @if($script->description)
                 <div class="mb-8">
                     <h2 class="text-xl font-black text-zinc-900 mb-4 tracking-tight">
                         Short Story
@@ -59,7 +58,7 @@
                     
                     <div class="bg-zinc-50 p-6 rounded-2xl border border-zinc-100 shadow-sm relative">
                         <div id="story-content" class="prose max-w-none text-zinc-600 text-sm font-medium leading-relaxed line-clamp-3 transition-all duration-300">
-                            {!! nl2br(e($script->description)) !!}
+                            {!! nl2br(e($script->short_story)) !!}
                         </div>
                         
                         <div class="mt-4 pt-4 border-t border-zinc-200/60">
@@ -91,7 +90,6 @@
                         }
                     }
                 </script>
-                @endif
                 
                 <div class="mb-12">
                     <a href="#area-download" class="inline-flex justify-center items-center gap-2 px-8 py-3.5 bg-zinc-900 text-white text-sm font-bold rounded-xl hover:bg-zinc-800 transition-all shadow-sm active:scale-95 w-full sm:w-auto">
