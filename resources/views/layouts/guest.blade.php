@@ -20,6 +20,6 @@
         </main>
 
         <x-footer />
-
+        <x-active-user/>
     </body>
 </html>

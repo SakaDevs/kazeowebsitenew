@@ -191,7 +191,9 @@
                                             </td>
 
                                             <td class="px-4 md:px-6 py-4 md:py-5 align-middle text-center">
-                                                <a href="{{ $link->url }}" target="_blank" class="inline-flex justify-center items-center px-5 md:px-6 py-2 bg-white border-2 border-zinc-200 text-zinc-900 text-xs md:text-sm font-bold rounded-xl hover:border-zinc-300 hover:bg-zinc-50 transition-all shadow-sm active:scale-95">
+                                                <a href="{{ $link->url }}" target="_blank" 
+                                                   onclick="logGlobalDownload('{{ addslashes($script->title) }}')"
+                                                   class="inline-flex justify-center items-center px-5 md:px-6 py-2 bg-white border-2 border-zinc-200 text-zinc-900 text-xs md:text-sm font-bold rounded-xl hover:border-zinc-300 hover:bg-zinc-50 transition-all shadow-sm active:scale-95 whitespace-nowrap">
                                                     Download
                                                 </a>
                                             </td>
@@ -295,5 +297,7 @@
         </div>
     </main>
     <x-footer/>
+    <x-active-user/>
+    <x-global-toast/>
 </body>
 </html>

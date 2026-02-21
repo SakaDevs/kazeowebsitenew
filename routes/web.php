@@ -137,3 +137,24 @@ Route::middleware('auth')->group(function () {
 Route::get('/social', function () {
     return view('social');
 })->name('social');
+
+Route::post('/log-download', function (Request $request) {
+    // Cek apakah dia login atau guest
+    $user = auth()->check() ? auth()->user()->name : 'Seseorang';
+    
+    $data = [
+        'user' => $user,
+        'script' => $request->script,
+        'id' => uniqid(), // ID unik agar animasinya ke-trigger walau download script yang sama
+    ];
+    
+    // Simpan ke Cache selama 1 menit
+    Cache::put('latest_global_download', $data, now()->addMinutes(1));
+    
+    return response()->json(['status' => 'ok']);
+})->name('log.download');
+
+// 2. Rute untuk dibaca oleh semua pengunjung secara real-time
+Route::get('/check-download', function () {
+    return response()->json(Cache::get('latest_global_download'));
+})->name('check.download');
