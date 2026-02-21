@@ -48,7 +48,7 @@ class ScriptController extends Controller
         // 3. Simpan Tabel Utama (Script)
         $script = Script::create([
             'title' => $request->title,
-            'slug' => Str::slug($request->title) . '-' . Str::random(5),
+            'slug' => Str::slug($request->title),
             'category_id' => $request->category_id,
             'user_id' => auth()->id(),
             'description' => $request->description,
