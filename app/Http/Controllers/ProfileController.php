@@ -8,7 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\View\View;
-
+use Illuminate\Support\Facades\Storage; // <--- PASTIKAN INI ADA DI PALING ATAS FILE
 class ProfileController extends Controller
 {
     /**
@@ -31,6 +31,18 @@ class ProfileController extends Controller
         if ($request->user()->isDirty('email')) {
             $request->user()->email_verified_at = null;
         }
+
+        // --- TAMBAHKAN BLOK LOGIKA AVATAR INI ---
+        if ($request->hasFile('avatar')) {
+            // Hapus foto lama kalau ada biar storage gak penuh
+            if ($request->user()->avatar && Storage::disk('public')->exists($request->user()->avatar)) {
+                Storage::disk('public')->delete($request->user()->avatar);
+            }
+            // Simpan foto baru ke folder 'avatars'
+            $avatarPath = $request->file('avatar')->store('avatars', 'public');
+            $request->user()->avatar = $avatarPath;
+        }
+        // ----------------------------------------
 
         $request->user()->save();
 

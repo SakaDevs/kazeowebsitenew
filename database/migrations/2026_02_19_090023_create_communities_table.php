@@ -10,15 +10,23 @@ return new class extends Migration
      * Run the migrations.
      */
     public function up(): void
-{
-    Schema::create('communities', function (Blueprint $table) {
-        $table->id();
-        $table->foreignId('user_id')->constrained()->cascadeOnDelete();
-        $table->text('body');
-        $table->boolean('is_pinned')->default(false); // Hanya admin/super_admin yang bisa ubah ini nanti
-        $table->timestamps();
-    });
-}
+    {
+        Schema::create('communities', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
+            
+            // Kolom untuk frontend user
+            $table->string('category')->default('Tanya Jawab'); 
+            $table->string('title');
+            $table->text('content');
+            $table->integer('views')->default(0);
+            
+            // Kolom untuk fitur Admin
+            $table->boolean('is_pinned')->default(false);
+            
+            $table->timestamps();
+        });
+    }
 
     /**
      * Reverse the migrations.

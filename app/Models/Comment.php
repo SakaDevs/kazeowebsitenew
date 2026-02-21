@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Comment extends Model
 {
+    protected $guarded = ['id']; // Kita hanya melindungi kolom 'id' agar tidak bisa diisi massal
     protected $fillable = ['user_id', 'body'];
 
     public function user()

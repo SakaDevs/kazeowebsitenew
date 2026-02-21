@@ -3,10 +3,13 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 class Community extends Model
 {
-    protected $fillable = ['user_id', 'body', 'is_pinned'];
+    use HasFactory;
+
+    // Mengizinkan semua kolom untuk diisi (membuka gembok Mass Assignment)
+    protected $guarded = ['id'];
 
     public function user()
     {

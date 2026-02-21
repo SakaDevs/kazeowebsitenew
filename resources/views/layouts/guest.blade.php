@@ -4,23 +4,21 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="csrf-token" content="{{ csrf_token() }}">
-
-        <title>Register - Kazeo Official</title>
-
-        <link rel="preconnect" href="https://fonts.googleapis.com">
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-        <link href="https://fonts.googleapis.com/css2?family=Barlow:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
-
+        <title>{{ config('app.name', 'Kazeo Official') }} - Authentikasi</title>
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     </head>
-    <body class="font-sans text-zinc-900 antialiased bg-zinc-50 selection:bg-zinc-900 selection:text-white">
-        
-        <div class="min-h-screen flex flex-col sm:justify-center items-center pt-10 sm:pt-0 px-4 bg-zinc-50">
     
-            <div class="w-full sm:max-w-md relative z-10 mb-16">
-                {{ $slot }}
-            </div>
+    <body class="bg-zinc-50 pt-24 pb-12 flex flex-col min-h-screen">
+        
+        <x-navbar />
 
-        </div>
+        <main class="flex-grow flex items-center justify-center w-full px-4 sm:px-6 lg:px-8 mt-4 mb-12 relative">
+            <div class="absolute w-72 h-72 bg-red-100 rounded-full blur-3xl opacity-50 pointer-events-none -z-10"></div>
+            
+            {{ $slot }}
+        </main>
+
+        <x-footer />
+
     </body>
 </html>

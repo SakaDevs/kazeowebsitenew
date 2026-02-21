@@ -1,14 +1,13 @@
-<x-navbar/>
 <x-guest-layout>
     <div x-data="{ show: false }" x-init="setTimeout(() => show = true, 100)"
          x-show="show"
          x-transition:enter="transition ease-out duration-700"
          x-transition:enter-start="opacity-0 translate-y-8"
          x-transition:enter-end="opacity-100 translate-y-0"
-         class="w-full bg-white backdrop-blur-xl shadow-2xl shadow-zinc-200/60 rounded-3xl overflow-hidden border border-zinc-100 p-8 sm:p-10"
+         class="w-full sm:max-w-md bg-white border border-zinc-200 shadow-sm overflow-hidden rounded-[2rem] px-6 sm:px-8 py-8 sm:py-10 z-10"
          style="display: none;">
 
-        <div class="mb-8 text-center mt-16">
+        <div class="mb-8 text-center">
             <h2 class="text-3xl font-black text-zinc-900 tracking-tight">Create Account</h2>
             <p class="text-sm text-zinc-500 mt-2 font-medium">Join Kazeo Official today.</p>
         </div>
@@ -57,4 +56,3 @@
         </form>
     </div>
 </x-guest-layout>
-<x-footer />
