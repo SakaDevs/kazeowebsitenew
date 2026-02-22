@@ -34,23 +34,25 @@ class CommunityController extends Controller
 
     // Menyimpan postingan baru ke database
     public function store(Request $request)
-    {
-        $request->validate([
-            'title' => 'required|string|max:255',
-            'category' => 'required|string',
-            'content' => 'required|string',
-        ]);
+{
+    // 1. Validasi input dari form
+    $request->validate([
+        'title' => 'required|string|max:255',
+        'body' => 'required|string',
+        'category' => 'required|string',
+    ]);
 
-        Community::create([
-            'user_id' => auth()->id(),
-            'title' => $request->title,
-            'category' => $request->category,
-            'content' => $request->content,
-            'is_pinned' => false, // Default tidak di-pin
-        ]);
+    // 2. Simpan ke database (Pastikan title dan body dipanggil di sini!)
+    Community::create([
+        'user_id' => auth()->id(),
+        'title' => $request->title,
+        'body' => $request->body,
+        'category' => $request->category,
+        'is_pinned' => false, // Default tidak di-pin
+    ]);
 
-        return redirect()->route('community.index')->with('success', 'Postingan berhasil diterbitkan!');
-    }
+    return redirect()->route('community.index')->with('success', 'Postingan berhasil dibuat!');
+}
 
     // Fungsi Like / Unlike
     public function toggleLike(Community $community)

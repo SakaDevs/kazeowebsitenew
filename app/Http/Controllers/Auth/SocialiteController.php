@@ -20,7 +20,7 @@ class SocialiteController extends Controller
     public function callback($provider)
     {
         try {
-            $socialUser = Socialite::driver($provider)->user();
+            $socialUser = Socialite::driver($provider)->stateless()->user();
             
             // Cek apakah email user ini sudah pernah terdaftar di Kazeo
             $user = User::where('email', $socialUser->getEmail())->first();

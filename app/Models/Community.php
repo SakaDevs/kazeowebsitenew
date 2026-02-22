@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 class Community extends Model
 {
     use HasFactory;
-
+    // protected $fillable = ['title', 'body'];
     // Mengizinkan semua kolom untuk diisi (membuka gembok Mass Assignment)
     protected $guarded = ['id'];
 
