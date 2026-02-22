@@ -243,6 +243,5 @@
     
     <x-footer/>
     <x-active-user/>
-    <x-global-toast/>
 </body>
 </html>
