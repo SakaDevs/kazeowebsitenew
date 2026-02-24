@@ -56,40 +56,23 @@
                         Short Story
                     </h2>
                     
-                    <div class="bg-zinc-50 p-6 rounded-2xl border border-zinc-100 shadow-sm relative">
-                        <div id="story-content" class="prose max-w-none text-zinc-600 text-sm font-medium leading-relaxed line-clamp-3 transition-all duration-300">
+                    <div x-data="{ expanded: false }" class="bg-zinc-50 p-6 rounded-2xl border border-zinc-100 shadow-sm relative">
+                        
+                        <div :class="expanded ? '' : 'line-clamp-3'" class="prose max-w-none text-zinc-600 text-sm font-medium leading-relaxed transition-all duration-300">
                             {!! nl2br(e($script->short_story)) !!}
                         </div>
                         
                         <div class="mt-4 pt-4 border-t border-zinc-200/60">
-                            <button id="toggle-story-btn" onclick="toggleStory()" class="inline-flex items-center gap-1.5 text-zinc-900 font-bold text-sm hover:text-blue-600 transition-colors group">
-                                <span id="toggle-text">Baca Selengkapnya</span>
-                                <svg id="toggle-icon" class="w-4 h-4 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <button @click="expanded = !expanded" class="inline-flex items-center gap-1.5 text-zinc-900 font-bold text-sm hover:text-blue-600 transition-colors group focus:outline-none">
+                                <span x-text="expanded ? 'Tutup Cerita' : 'Baca Selengkapnya'"></span>
+                                
+                                <svg :class="expanded ? 'rotate-180' : ''" class="w-4 h-4 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
                                 </svg>
                             </button>
                         </div>
                     </div>
                 </div>
-
-                <script>
-                    function toggleStory() {
-                        const content = document.getElementById('story-content');
-                        const text = document.getElementById('toggle-text');
-                        const icon = document.getElementById('toggle-icon');
-
-                        // Cek apakah teks sedang tertutup (punya class line-clamp-3)
-                        if (content.classList.contains('line-clamp-3')) {
-                            content.classList.remove('line-clamp-3'); // Buka teks full
-                            text.textContent = 'Tutup Cerita';        // Ubah tulisan tombol
-                            icon.classList.add('rotate-180');         // Putar panah ke atas
-                        } else {
-                            content.classList.add('line-clamp-3');    // Tutup teks kembali
-                            text.textContent = 'Baca Selengkapnya';   // Kembalikan tulisan tombol
-                            icon.classList.remove('rotate-180');      // Putar panah ke bawah
-                        }
-                    }
-                </script>
                 
                 <div class="mb-12">
                     <a href="#area-download" class="inline-flex justify-center items-center gap-2 px-8 py-3.5 bg-zinc-900 text-white text-sm font-bold rounded-xl hover:bg-zinc-800 transition-all shadow-sm active:scale-95 w-full sm:w-auto">
