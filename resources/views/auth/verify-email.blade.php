@@ -28,4 +28,5 @@
             </button>
         </form>
     </div>
+    <x-active-user/>
 </x-guest-layout>

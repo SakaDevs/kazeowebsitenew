@@ -8,7 +8,8 @@ use App\Models\Category;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Storage;
-use App\Models\ScriptTemplate; // <--- TAMBAHKAN BARIS INI
+use App\Models\ScriptTemplate;
+
 class ScriptController extends Controller
 {
     public function index()
@@ -25,28 +26,26 @@ class ScriptController extends Controller
         
         return view('admin.scripts.create', compact('categories', 'templates'));
     }
+
     public function store(Request $request)
     {
-        // 1. Validasi Script Utama & Array Link
         $request->validate([
             'title' => 'required|string|max:255',
             'category_id' => 'required|exists:categories,id',
             'description' => 'required|string',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
-            // Validasi Array Links
+            
+            // Validasi Array Links yang baru untuk Drag & Drop dan Tipe Gambar
             'links' => 'required|array|min:1',
             'links.*.replace_name' => 'required|string|max:255',
             'links.*.url' => 'required|url',
-            'links.*.image' => 'nullable|string', // Gambar Varian sekarang string/URL
+            'links.*.image_type' => 'required|in:file,url,none', 
+            'links.*.image_file' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
+            'links.*.image_url' => 'nullable|url',
         ]);
 
-        // 2. Upload Gambar Thumbnail Utama (jika ada)
-        $mainImagePath = null;
-        if ($request->hasFile('image')) {
-            $mainImagePath = $request->file('image')->store('scripts', 'public');
-        }
+        $mainImagePath = $request->hasFile('image') ? $request->file('image')->store('scripts', 'public') : null;
 
-        // 3. Simpan Tabel Utama (Script)
         $script = Script::create([
             'title' => $request->title,
             'slug' => Str::slug($request->title),
@@ -57,18 +56,27 @@ class ScriptController extends Controller
             'image' => $mainImagePath,
         ]);
 
-        // 4. Proses Loop Array Links (Sekarang langsung simpan URL teks)
         if ($request->has('links')) {
-            foreach ($request->links as $linkData) {
+            foreach ($request->links as $index => $linkData) {
+                $imageType = $linkData['image_type'] ?? 'none';
+                $linkImagePath = null;
+
+                // Logika Cerdas Pemilihan Gambar Varian (Store)
+                if ($imageType === 'file' && $request->hasFile("links.{$index}.image_file")) {
+                    $linkImagePath = $request->file("links.{$index}.image_file")->store('script_links', 'public');
+                } elseif ($imageType === 'url') {
+                    $linkImagePath = $linkData['image_url'] ?? null;
+                }
+
                 $script->links()->create([
                     'replace_name' => $linkData['replace_name'],
                     'url' => $linkData['url'],
-                    'image' => $linkData['image'] ?? null, // Langsung simpan link URL
+                    'image' => $linkImagePath,
                 ]);
             }
         }
 
-        return redirect()->route('admin.scripts.index')->with('success', 'Script dengan multiple links berhasil di-upload!');
+        return redirect()->route('admin.scripts.index')->with('success', 'Script berhasil ditambahkan!');
     }
 
     public function edit(Script $script)
@@ -90,11 +98,15 @@ class ScriptController extends Controller
             'category_id' => 'required|exists:categories,id',
             'description' => 'required|string',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
+            
+            // Validasi Array Links yang baru untuk Drag & Drop dan Tipe Gambar
             'links' => 'required|array|min:1',
             'links.*.id' => 'nullable|exists:script_links,id', 
             'links.*.replace_name' => 'required|string|max:255',
             'links.*.url' => 'required|url',
-            'links.*.image' => 'nullable|string', // Gambar Varian sekarang string/URL
+            'links.*.image_type' => 'required|in:file,url,none',
+            'links.*.image_file' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
+            'links.*.image_url' => 'nullable|url',
         ]);
 
         // 2. Update Thumbnail Utama (jika ada yang baru)
@@ -115,25 +127,42 @@ class ScriptController extends Controller
             'image' => $mainImagePath,
         ]);
 
-        // 4. Proses Link Dinamis (Tambah, Edit, Hapus)
+        // 4. Proses Link Dinamis (Tambah, Edit, Hapus, Urutan)
         $submittedLinkIds = []; 
 
         if ($request->has('links')) {
-            foreach ($request->links as $linkData) {
+            // Harus pakai $index biar deteksi upload filenya tepat sasaran!
+            foreach ($request->links as $index => $linkData) {
                 $linkId = $linkData['id'] ?? null;
                 $existingLink = $linkId ? \App\Models\ScriptLink::find($linkId) : null;
                 
-                // Ambil data gambar (bisa URL dari luar atau null)
-                $linkImagePath = $linkData['image'] ?? null;
+                $imageType = $linkData['image_type'] ?? 'none';
+                $linkImagePath = $existingLink ? $existingLink->image : null;
+
+                // Logika Cerdas Pemilihan Gambar Varian (Update)
+                if ($imageType === 'file' && $request->hasFile("links.{$index}.image_file")) {
+                    // Hapus gambar lama jika bentuknya file lokal
+                    if ($linkImagePath && !Str::startsWith($linkImagePath, ['http://', 'https://']) && Storage::disk('public')->exists($linkImagePath)) {
+                        Storage::disk('public')->delete($linkImagePath);
+                    }
+                    $linkImagePath = $request->file("links.{$index}.image_file")->store('script_links', 'public');
+                } 
+                elseif ($imageType === 'url') {
+                    // Hapus gambar lama jika bentuknya file lokal sebelum diganti URL
+                    if ($linkImagePath && !Str::startsWith($linkImagePath, ['http://', 'https://']) && Storage::disk('public')->exists($linkImagePath)) {
+                        Storage::disk('public')->delete($linkImagePath);
+                    }
+                    $linkImagePath = $linkData['image_url'] ?? null;
+                } 
+                elseif ($imageType === 'none') {
+                    // Hapus gambar lama dan kosongkan
+                    if ($linkImagePath && !Str::startsWith($linkImagePath, ['http://', 'https://']) && Storage::disk('public')->exists($linkImagePath)) {
+                        Storage::disk('public')->delete($linkImagePath);
+                    }
+                    $linkImagePath = null;
+                }
 
                 if ($existingLink) {
-                    // Jika sebelumnya pakai file lokal, lalu diganti URL luar, hapus file lokal lamanya
-                    if ($existingLink->image && $existingLink->image !== $linkImagePath && !Str::startsWith($existingLink->image, ['http://', 'https://'])) {
-                        if (Storage::disk('public')->exists($existingLink->image)) {
-                            Storage::disk('public')->delete($existingLink->image);
-                        }
-                    }
-
                     $existingLink->update([
                         'replace_name' => $linkData['replace_name'],
                         'url' => $linkData['url'],
@@ -141,7 +170,6 @@ class ScriptController extends Controller
                     ]);
                     $submittedLinkIds[] = $existingLink->id;
                 } else {
-                    // Link varian baru
                     $newLink = $script->links()->create([
                         'replace_name' => $linkData['replace_name'],
                         'url' => $linkData['url'],
@@ -188,6 +216,4 @@ class ScriptController extends Controller
 
         return redirect()->route('admin.scripts.index')->with('success', 'Script berhasil dihapus!');
     }
-
-    
 }

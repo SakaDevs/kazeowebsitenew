@@ -43,5 +43,6 @@
             </div>
         </form>
     </div>
+    <x-active-user/>
 </x-guest-layout>
 <x-footer/>

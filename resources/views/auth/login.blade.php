@@ -85,4 +85,5 @@
             </p>
         </div>
     </div>
+    <x-active-user/>
 </x-guest-layout>
