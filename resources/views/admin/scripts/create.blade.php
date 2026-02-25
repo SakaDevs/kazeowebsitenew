@@ -92,7 +92,7 @@
 
                         <div class="w-full sm:w-1/3 space-y-1.5">
                             <label class="block text-xs font-bold text-zinc-500 uppercase">Variant Image</label>
-                            <input type="file" :name="'links['+index+'][image]'" accept="image/*" class="block w-full px-3 py-2 rounded-lg border border-zinc-300 bg-white text-xs">
+                            <input type="text" name="links[0][image]" placeholder="https://..." class="form-control">
                         </div>
 
                         <button type="button" @click="links.splice(index, 1)" x-show="links.length > 1" class="absolute -top-3 -right-3 w-8 h-8 flex items-center justify-center bg-red-100 text-red-600 rounded-full shadow-md hover:bg-red-200 hover:scale-110 transition-all" title="Hapus baris">

@@ -16,9 +16,15 @@ class TemplateController extends Controller
 
     public function create()
     {
-        return view('admin.templates.create');
+        // Mengarahkan ke form pembuatan template
+        return view('admin.templates.create'); 
     }
 
+    public function edit(ScriptTemplate $template)
+    {
+        // Mengarahkan ke form edit template dengan membawa data template lama
+        return view('admin.templates.edit', compact('template'));
+    }
     public function store(Request $request)
     {
         $request->validate([
@@ -32,11 +38,6 @@ class TemplateController extends Controller
         ]);
 
         return redirect()->route('admin.templates.index')->with('success', 'Template baru berhasil ditambahkan!');
-    }
-
-    public function edit(ScriptTemplate $template)
-    {
-        return view('admin.templates.edit', compact('template'));
     }
 
     public function update(Request $request, ScriptTemplate $template)

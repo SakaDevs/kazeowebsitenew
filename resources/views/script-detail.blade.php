@@ -4,8 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ $script->title }} - Kazeo Official</title>
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
+    
     <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}?v=3">
+    
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body class="bg-zinc-50 pt-24 pb-20">
     <x-navbar/>
@@ -40,7 +42,7 @@
                     
                     <div class="flex flex-wrap items-center gap-x-6 gap-y-3 text-sm font-medium text-zinc-500">
                         <div class="flex items-center gap-2">
-                            Oleh <span class="text-zinc-900 font-bold">{{ $script->user->name ?? 'Unknown' }}</span>
+                            Oleh <span class="text-zinc-900 font-bold">{{ $script->user->name ?? 'Kazeo Official' }}</span>
                         </div>
                         <div class="flex items-center gap-1.5" title="Diperbarui pada {{ \Carbon\Carbon::parse($script->updated_at)->format('d M Y, H:i') }}">
                             <span>🕒</span> Diperbarui {{ \Carbon\Carbon::parse($script->updated_at)->diffForHumans() }}
@@ -51,28 +53,47 @@
                     </div>
                 </div>
 
-                <div class="mb-8">
+                @if($script->short_story)
+                @php
+                    // Bersihkan tag HTML untuk menghitung dan memotong kata dengan aman
+                    $plainText = strip_tags($script->short_story);
+                    $wordCount = str_word_count($plainText);
+                    $isLong = $wordCount > 100;
+                @endphp
+                
+                <div class="mb-8" @if($isLong) x-data="{ expanded: false }" @endif>
                     <h2 class="text-xl font-black text-zinc-900 mb-4 tracking-tight">
                         Short Story
                     </h2>
                     
-                    <div x-data="{ expanded: false }" class="bg-zinc-50 p-6 rounded-2xl border border-zinc-100 shadow-sm relative">
+                    <div class="bg-zinc-50 p-6 rounded-2xl border border-zinc-100 shadow-sm relative">
                         
-                        <div :class="expanded ? '' : 'line-clamp-3'" class="prose max-w-none text-zinc-600 text-sm font-medium leading-relaxed transition-all duration-300">
-                            {!! nl2br(e($script->short_story)) !!}
-                        </div>
+                        @if($isLong)
+                            <div x-show="!expanded" class="prose max-w-none text-zinc-600 text-sm font-medium leading-relaxed">
+                                {!! nl2br(e(Str::words($plainText, 10, '...'))) !!}
+                            </div>
+                            
+                            <div x-show="expanded" style="display: none;" class="prose max-w-none text-zinc-600 text-sm font-medium leading-relaxed transition-all duration-300">
+                                {!! nl2br(e($script->short_story)) !!}
+                            </div>
+                            
+                            <div class="mt-4 pt-4 border-t border-zinc-200/60">
+                                <button @click="expanded = !expanded" class="inline-flex items-center gap-1.5 text-zinc-900 font-bold text-sm hover:text-blue-600 transition-colors group focus:outline-none">
+                                    <span x-text="expanded ? 'Tutup Cerita' : 'Baca Selengkapnya'"></span>
+                                    <svg :class="expanded ? 'rotate-180' : ''" class="w-4 h-4 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                                    </svg>
+                                </button>
+                            </div>
+                        @else
+                            <div class="prose max-w-none text-zinc-600 text-sm font-medium leading-relaxed">
+                                {!! nl2br(e($script->description)) !!}
+                            </div>
+                        @endif
                         
-                        <div class="mt-4 pt-4 border-t border-zinc-200/60">
-                            <button @click="expanded = !expanded" class="inline-flex items-center gap-1.5 text-zinc-900 font-bold text-sm hover:text-blue-600 transition-colors group focus:outline-none">
-                                <span x-text="expanded ? 'Tutup Cerita' : 'Baca Selengkapnya'"></span>
-                                
-                                <svg :class="expanded ? 'rotate-180' : ''" class="w-4 h-4 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-                                </svg>
-                            </button>
-                        </div>
                     </div>
                 </div>
+                @endif
                 
                 <div class="mb-12">
                     <a href="#area-download" class="inline-flex justify-center items-center gap-2 px-8 py-3.5 bg-zinc-900 text-white text-sm font-bold rounded-xl hover:bg-zinc-800 transition-all shadow-sm active:scale-95 w-full sm:w-auto">
@@ -165,7 +186,11 @@
                                             
                                             <td class="px-4 md:px-6 py-4 md:py-5 align-middle text-center">
                                                 @if($link->image)
-                                                    <img src="{{ Storage::url($link->image) }}" alt="{{ $link->replace_name }}" class="w-10 h-10 md:w-11 md:h-11 rounded-full object-cover mx-auto shadow-sm transition-transform hover:scale-110 cursor-pointer">
+                                                    @if(Str::startsWith($link->image, ['http://', 'https://']))
+                                                        <img src="{{ $link->image }}" alt="{{ $link->replace_name }}" referrerpolicy="no-referrer" class="w-10 h-10 md:w-11 md:h-11 rounded-full object-cover mx-auto shadow-sm transition-transform hover:scale-110 cursor-pointer">
+                                                    @else
+                                                        <img src="{{ Storage::url($link->image) }}" alt="{{ $link->replace_name }}" class="w-10 h-10 md:w-11 md:h-11 rounded-full object-cover mx-auto shadow-sm transition-transform hover:scale-110 cursor-pointer">
+                                                    @endif
                                                 @else
                                                     <div class="w-10 h-10 md:w-11 md:h-11 rounded-full bg-zinc-100 mx-auto flex items-center justify-center border border-zinc-200 text-zinc-400 text-xs shadow-sm">
                                                         <span>📷</span>
@@ -280,6 +305,9 @@
         </div>
     </main>
     <x-footer/>
+
     <x-active-user/>
+    <x-global-toast/>
+    
 </body>
 </html>

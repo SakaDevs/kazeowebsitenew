@@ -125,7 +125,7 @@
                                     <img :src="link.image_url" class="w-8 h-6 object-cover rounded shadow-sm border border-zinc-200 mb-1">
                                 </template>
                             </div>
-                            <input type="file" :name="'links['+index+'][image]'" accept="image/*" class="block w-full px-3 py-2 rounded-lg border border-zinc-300 bg-white text-xs">
+                            <input type="text" name="links[0][image]" placeholder="https://..." class="form-control">
                         </div>
 
                         <button type="button" @click="links.splice(index, 1)" class="absolute -top-3 -right-3 w-8 h-8 flex items-center justify-center bg-red-100 text-red-600 rounded-full shadow-md hover:bg-red-200 hover:scale-110 transition-all" title="Hapus baris">
