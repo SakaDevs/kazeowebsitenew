@@ -80,14 +80,14 @@
                 <h3 class="text-lg font-bold text-zinc-900 mb-4 border-b pb-2">Manage Download Links (Drag Icon ⇅ untuk mengurutkan)</h3>
                 
                 <div class="border border-zinc-200 rounded-xl overflow-hidden bg-white shadow-sm overflow-x-auto">
-                    <table class="w-full text-sm text-left whitespace-nowrap">
+                    <table class="w-full min-w-[1050px] text-sm text-left whitespace-nowrap">
                         <thead class="bg-zinc-50 border-b border-zinc-200 text-xs uppercase text-zinc-500 font-bold">
                             <tr>
-                                <th class="px-4 py-3 w-10 text-center">⇅</th>
-                                <th class="px-4 py-3 min-w-[200px]">Replace Text</th>
-                                <th class="px-4 py-3 min-w-[200px]">URL Link</th>
-                                <th class="px-4 py-3 min-w-[250px]">Variant Image</th>
-                                <th class="px-4 py-3 text-center w-20">Aksi</th>
+                                <th class="px-4 py-3 w-12 text-center">⇅</th>
+                                <th class="px-4 py-3 w-[25%]">Replace Text</th>
+                                <th class="px-4 py-3 w-[25%]">URL Link</th>
+                                <th class="px-4 py-3 w-[35%]">Variant Image</th>
+                                <th class="px-4 py-3 w-[15%] text-center">Aksi</th>
                             </tr>
                         </thead>
                         <tbody id="links-container" class="divide-y divide-zinc-100">
@@ -120,24 +120,27 @@
                                     <td class="px-4 py-3 align-top">
                                         <input type="url" name="links[{{ $index }}][url]" value="{{ $link->url }}" class="w-full form-control rounded-lg border-zinc-300 text-sm py-2 px-3" required>
                                     </td>
-                                    <td class="px-4 py-3 align-top">
-                                        @if($imageUrlPreview)
-                                            <div class="mb-2">
-                                                <img src="{{ $imageUrlPreview }}" referrerpolicy="no-referrer" class="h-10 w-auto rounded border border-zinc-200 object-cover">
-                                            </div>
-                                        @endif
-                                        <select name="links[{{ $index }}][image_type]" class="w-full form-select rounded-lg border-zinc-300 text-sm mb-2 image-type-select py-2 px-3 bg-zinc-50" onchange="toggleImageType(this, {{ $index }})">
-                                            <option value="none" {{ $imageType == 'none' ? 'selected' : '' }}>Kosong / Default 📷</option>
-                                            <option value="file" {{ $imageType == 'file' ? 'selected' : '' }}>Ganti File dari Komputer</option>
-                                            <option value="url" {{ $imageType == 'url' ? 'selected' : '' }}>Ganti Link (Wikia/Fandom)</option>
-                                        </select>
-                                        
-                                        <input type="file" name="links[{{ $index }}][image_file]" class="w-full form-control text-sm image-input-file {{ $imageType == 'file' ? '' : 'hidden' }}" accept="image/*">
-                                        
-                                        <input type="url" name="links[{{ $index }}][image_url]" value="{{ $imageType == 'url' ? $link->image : '' }}" class="w-full form-control rounded-lg border-zinc-300 text-sm image-input-url {{ $imageType == 'url' ? '' : 'hidden' }} py-2 px-3" placeholder="https://static.wikia...">
+                                    <td class="px-4 py-3 align-top min-w-[250px]">
+                                        <div class="flex flex-col gap-2 w-full">
+                                            @if($imageUrlPreview)
+                                                <div>
+                                                    <img src="{{ $imageUrlPreview }}" referrerpolicy="no-referrer" class="h-10 w-auto rounded border border-zinc-200 object-cover">
+                                                </div>
+                                            @endif
+                                            
+                                            <select name="links[{{ $index }}][image_type]" class="w-full form-select rounded-lg border-zinc-300 text-sm image-type-select py-2 px-3 bg-zinc-50 truncate" onchange="toggleImageType(this, {{ $index }})">
+                                                <option value="none" {{ $imageType == 'none' ? 'selected' : '' }}>Kosong / Default 📷</option>
+                                                <option value="file" {{ $imageType == 'file' ? 'selected' : '' }}>Ganti File dari Komputer</option>
+                                                <option value="url" {{ $imageType == 'url' ? 'selected' : '' }}>Ganti Link (Wikia/Fandom)</option>
+                                            </select>
+                                            
+                                            <input type="file" name="links[{{ $index }}][image_file]" class="w-full form-control text-sm image-input-file {{ $imageType == 'file' ? '' : 'hidden' }}" accept="image/*">
+                                            
+                                            <input type="url" name="links[{{ $index }}][image_url]" value="{{ $imageType == 'url' ? $link->image : '' }}" class="w-full form-control rounded-lg border-zinc-300 text-sm image-input-url {{ $imageType == 'url' ? '' : 'hidden' }} py-2 px-3" placeholder="https://static.wikia...">
+                                        </div>
                                     </td>
                                     <td class="px-4 py-3 text-center align-top pt-4">
-                                        <button type="button" onclick="removeLink(this)" class="p-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 hover:text-red-700 transition-colors" title="Hapus Baris">
+                                        <button type="button" onclick="removeLink(this)" class="p-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 hover:text-red-700 transition-colors mx-auto flex justify-center items-center" title="Hapus Baris">
                                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
                                         </button>
                                     </td>
@@ -192,17 +195,19 @@
                     <td class="px-4 py-3 align-top">
                         <input type="url" name="links[${linkIndex}][url]" class="w-full form-control rounded-lg border-zinc-300 text-sm py-2 px-3" placeholder="https://..." required>
                     </td>
-                    <td class="px-4 py-3 align-top">
-                        <select name="links[${linkIndex}][image_type]" class="w-full form-select rounded-lg border-zinc-300 text-sm mb-2 image-type-select py-2 px-3 bg-zinc-50" onchange="toggleImageType(this, ${linkIndex})">
-                            <option value="none" selected>Kosong / Default 📷</option>
-                            <option value="file">Upload File dari Komputer</option>
-                            <option value="url">Pakai Link (Wikia/Fandom)</option>
-                        </select>
-                        <input type="file" name="links[${linkIndex}][image_file]" class="w-full form-control text-sm image-input-file hidden" accept="image/*">
-                        <input type="url" name="links[${linkIndex}][image_url]" class="w-full form-control rounded-lg border-zinc-300 text-sm image-input-url hidden py-2 px-3" placeholder="https://static.wikia...">
+                    <td class="px-4 py-3 align-top min-w-[250px]">
+                        <div class="flex flex-col gap-2 w-full">
+                            <select name="links[${linkIndex}][image_type]" class="w-full form-select rounded-lg border-zinc-300 text-sm image-type-select py-2 px-3 bg-zinc-50 truncate" onchange="toggleImageType(this, ${linkIndex})">
+                                <option value="none" selected>Kosong / Default 📷</option>
+                                <option value="file">Upload File dari Komputer</option>
+                                <option value="url">Pakai Link (Wikia/Fandom)</option>
+                            </select>
+                            <input type="file" name="links[${linkIndex}][image_file]" class="w-full form-control text-sm image-input-file hidden" accept="image/*">
+                            <input type="url" name="links[${linkIndex}][image_url]" class="w-full form-control rounded-lg border-zinc-300 text-sm image-input-url hidden py-2 px-3" placeholder="https://static.wikia...">
+                        </div>
                     </td>
                     <td class="px-4 py-3 text-center align-top pt-4">
-                        <button type="button" onclick="removeLink(this)" class="p-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 hover:text-red-700 transition-colors" title="Hapus Baris">
+                        <button type="button" onclick="removeLink(this)" class="p-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 hover:text-red-700 transition-colors mx-auto flex justify-center items-center" title="Hapus Baris">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
                         </button>
                     </td>
@@ -221,12 +226,16 @@
             if (selectElement.value === 'file') {
                 fileInput.classList.remove('hidden');
                 urlInput.classList.add('hidden');
+                urlInput.value = ''; 
             } else if (selectElement.value === 'url') {
                 urlInput.classList.remove('hidden');
                 fileInput.classList.add('hidden');
+                fileInput.value = ''; 
             } else {
                 fileInput.classList.add('hidden');
                 urlInput.classList.add('hidden');
+                fileInput.value = '';
+                urlInput.value = '';
             }
         }
 
