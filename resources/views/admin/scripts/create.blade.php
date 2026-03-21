@@ -54,7 +54,7 @@
                         <label class="block text-sm font-bold text-zinc-700">Description</label>
                         
                         <select x-model="selectedTemplate" @change="fillTemplate()" class="text-sm border-zinc-200 rounded-lg bg-zinc-100 py-1.5 pl-3 pr-8 focus:ring-zinc-900 focus:border-zinc-900 font-medium text-zinc-700 cursor-pointer hover:bg-zinc-200 transition-colors shadow-sm">
-                            <option value="">💡 Gunakan Template Deskripsi...</option>
+                            <option value="">Gunakan Template Deskripsi...</option>
                             <template x-for="t in templates" :key="t.id">
                                 <option :value="t.id" x-text="t.name"></option>
                             </template>

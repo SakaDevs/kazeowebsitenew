@@ -9,9 +9,19 @@ use Illuminate\Support\Str; // Wajib dipanggil untuk bikin Slug otomatis
 
 class CategoryController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $categories = Category::latest()->paginate(10);
+        $query = Category::latest();
+
+        // Logika Live Search
+        if ($request->has('search') && $request->search != '') {
+            $search = $request->search;
+            $query->where('name', 'like', '%' . $search . '%');
+        }
+
+        // Jangan lupa withQueryString()
+        $categories = $query->paginate(10)->withQueryString();
+
         return view('admin.categories.index', compact('categories'));
     }
 

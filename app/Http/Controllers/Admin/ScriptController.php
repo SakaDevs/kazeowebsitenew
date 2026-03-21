@@ -12,17 +12,24 @@ use App\Models\ScriptTemplate;
 
 class ScriptController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $scripts = Script::with(['category', 'user'])->latest()->paginate(10);
+        $query = Script::with(['category', 'user'])->latest();
+
+        if ($request->has('search') && $request->search != '') {
+            $search = $request->search;
+            $query->where('title', 'like', '%' . $search . '%');
+        }
+        $scripts = $query->paginate(10)->withQueryString(); 
+        
         return view('admin.scripts.index', compact('scripts'));
     }
 
     public function create()
     {
         // Ambil semua kategori dan template untuk dimasukkan ke form
-        $categories = Category::all();
-        $templates = ScriptTemplate::all(); 
+        $categories = Category::orderBy('name', 'asc')->get();
+        $templates = ScriptTemplate::orderBy('name', 'asc')->get();
         
         return view('admin.scripts.create', compact('categories', 'templates'));
     }
@@ -81,11 +88,10 @@ class ScriptController extends Controller
 
     public function edit(Script $script)
     {
-        $categories = Category::all();
-        $templates = ScriptTemplate::all(); 
+        $categories = Category::orderBy('name', 'asc')->get();
+        $templates = ScriptTemplate::orderBy('name', 'asc')->get(); 
         
-        // Wajib me-load relasi links agar bisa ditampilkan di form edit
-        $script->load('links'); 
+        $script->load('links');
         
         return view('admin.scripts.edit', compact('script', 'categories', 'templates'));
     }

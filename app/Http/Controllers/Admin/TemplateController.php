@@ -8,9 +8,20 @@ use Illuminate\Http\Request;
 
 class TemplateController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $templates = ScriptTemplate::latest()->paginate(10);
+        $query = ScriptTemplate::latest(); // Sesuaikan dengan nama modelmu
+
+        // Logika Live Search
+        if ($request->has('search') && $request->search != '') {
+            $search = $request->search;
+            $query->where('name', 'like', '%' . $search . '%')
+                  ->orWhere('content', 'like', '%' . $search . '%'); // Optional: cari di isi template juga
+        }
+
+        // withQueryString() agar pagination tetap jalan
+        $templates = $query->paginate(10)->withQueryString();
+
         return view('admin.templates.index', compact('templates'));
     }
 
