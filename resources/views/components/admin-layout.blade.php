@@ -6,7 +6,7 @@
     <title>Super Admin - Kazeo Official</title>
     <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
-</head>
+    </head>
 <body class="font-sans antialiased bg-zinc-50 text-zinc-900 flex h-screen overflow-hidden" x-data="{ sidebarOpen: false }">
 
     <div x-show="sidebarOpen" 
@@ -52,11 +52,15 @@
                 <span>📋</span> Script Templates
             </a>
 
-            <a href="{{ route('admin.scripts.index') }}" class="flex items-center gap-3 px-4 py-3 rounded-xl text-zinc-400 hover:text-white hover:bg-zinc-800/50 font-medium transition-colors">
+            <a href="{{ route('admin.replace_templates.index') }}" class="flex items-center gap-3 px-4 py-3 rounded-xl {{ request()->routeIs('admin.replace_templates.*') ? 'bg-zinc-800 text-white' : 'text-zinc-400 hover:text-white hover:bg-zinc-800/50' }} font-medium transition-colors">
+                <span>🔄</span> Replace Templates
+            </a>
+
+            <a href="{{ route('admin.scripts.index') }}" class="flex items-center gap-3 px-4 py-3 rounded-xl {{ request()->routeIs('admin.scripts.*') ? 'bg-zinc-800 text-white' : 'text-zinc-400 hover:text-white hover:bg-zinc-800/50' }} font-medium transition-colors">
                 <span>📝</span> Scripts
             </a>
             
-            <a href="{{ route('admin.communities.index') }}" class="flex items-center gap-3 px-4 py-3 rounded-xl text-zinc-400 hover:text-white hover:bg-zinc-800/50 font-medium transition-colors">
+            <a href="{{ route('admin.communities.index') }}" class="flex items-center gap-3 px-4 py-3 rounded-xl {{ request()->routeIs('admin.communities.*') ? 'bg-zinc-800 text-white' : 'text-zinc-400 hover:text-white hover:bg-zinc-800/50' }} font-medium transition-colors">
                 <span>🌐</span> Communities
             </a>
             

@@ -7,6 +7,8 @@
         $totalScripts = \App\Models\Script::count();
         $totalCategories = \App\Models\Category::count();
         $totalCommunities = \App\Models\Community::count();
+        // Tambahan untuk Replace Templates
+        $totalReplaceTemplates = \App\Models\ReplaceTemplate::count(); 
         
         // Mengambil 5 script terbaru untuk tabel pantauan
         $recentScripts = \App\Models\Script::with('user', 'category')->latest()->take(5)->get();
@@ -17,37 +19,45 @@
         <p class="text-sm text-zinc-500 font-medium mt-1">Berikut adalah ringkasan data website Kazeo Official saat ini.</p>
     </div>
 
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
         
-        <div class="bg-white p-6 rounded-3xl border border-zinc-200 shadow-sm flex items-center gap-5 hover:shadow-md transition-all duration-300 hover:-translate-y-1">
-            <div class="w-14 h-14 rounded-2xl bg-zinc-900 text-white flex items-center justify-center text-2xl shadow-lg shadow-zinc-900/20 shrink-0">👥</div>
+        <div class="bg-white p-6 rounded-3xl border border-zinc-200 shadow-sm flex flex-col justify-center gap-4 hover:shadow-md transition-all duration-300 hover:-translate-y-1">
+            <div class="w-12 h-12 rounded-2xl bg-zinc-900 text-white flex items-center justify-center text-xl shadow-lg shadow-zinc-900/20 shrink-0">👥</div>
             <div>
                 <p class="text-sm font-bold text-zinc-500 mb-0.5">Total Users</p>
                 <h3 class="text-3xl font-black text-zinc-900">{{ number_format($totalUsers) }}</h3>
             </div>
         </div>
 
-        <div class="bg-white p-6 rounded-3xl border border-zinc-200 shadow-sm flex items-center gap-5 hover:shadow-md transition-all duration-300 hover:-translate-y-1">
-            <div class="w-14 h-14 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center text-2xl border border-blue-100 shrink-0">📦</div>
+        <div class="bg-white p-6 rounded-3xl border border-zinc-200 shadow-sm flex flex-col justify-center gap-4 hover:shadow-md transition-all duration-300 hover:-translate-y-1">
+            <div class="w-12 h-12 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center text-xl border border-blue-100 shrink-0">📦</div>
             <div>
                 <p class="text-sm font-bold text-zinc-500 mb-0.5">Total Scripts</p>
                 <h3 class="text-3xl font-black text-zinc-900">{{ number_format($totalScripts) }}</h3>
             </div>
         </div>
 
-        <div class="bg-white p-6 rounded-3xl border border-zinc-200 shadow-sm flex items-center gap-5 hover:shadow-md transition-all duration-300 hover:-translate-y-1">
-            <div class="w-14 h-14 rounded-2xl bg-orange-50 text-orange-600 flex items-center justify-center text-2xl border border-orange-100 shrink-0">📂</div>
+        <div class="bg-white p-6 rounded-3xl border border-zinc-200 shadow-sm flex flex-col justify-center gap-4 hover:shadow-md transition-all duration-300 hover:-translate-y-1">
+            <div class="w-12 h-12 rounded-2xl bg-orange-50 text-orange-600 flex items-center justify-center text-xl border border-orange-100 shrink-0">📂</div>
             <div>
                 <p class="text-sm font-bold text-zinc-500 mb-0.5">Kategori</p>
                 <h3 class="text-3xl font-black text-zinc-900">{{ number_format($totalCategories) }}</h3>
             </div>
         </div>
 
-        <div class="bg-white p-6 rounded-3xl border border-zinc-200 shadow-sm flex items-center gap-5 hover:shadow-md transition-all duration-300 hover:-translate-y-1">
-            <div class="w-14 h-14 rounded-2xl bg-red-50 text-red-600 flex items-center justify-center text-2xl border border-red-100 shrink-0">💬</div>
+        <div class="bg-white p-6 rounded-3xl border border-zinc-200 shadow-sm flex flex-col justify-center gap-4 hover:shadow-md transition-all duration-300 hover:-translate-y-1">
+            <div class="w-12 h-12 rounded-2xl bg-red-50 text-red-600 flex items-center justify-center text-xl border border-red-100 shrink-0">💬</div>
             <div>
-                <p class="text-sm font-bold text-zinc-500 mb-0.5">Post Komunitas</p>
+                <p class="text-sm font-bold text-zinc-500 mb-0.5">Komunitas</p>
                 <h3 class="text-3xl font-black text-zinc-900">{{ number_format($totalCommunities) }}</h3>
+            </div>
+        </div>
+
+        <div class="bg-white p-6 rounded-3xl border border-zinc-200 shadow-sm flex flex-col justify-center gap-4 hover:shadow-md transition-all duration-300 hover:-translate-y-1">
+            <div class="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-xl border border-emerald-100 shrink-0">🔄</div>
+            <div>
+                <p class="text-sm font-bold text-zinc-500 mb-0.5">Replace Tpl.</p>
+                <h3 class="text-3xl font-black text-zinc-900">{{ number_format($totalReplaceTemplates) }}</h3>
             </div>
         </div>
     </div>

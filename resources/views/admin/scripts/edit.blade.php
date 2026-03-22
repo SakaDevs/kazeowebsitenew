@@ -1,9 +1,10 @@
 <x-admin-layout>
-    <x-slot name="title">Edit Script & Links</x-slot>
+    <x-slot name="title">Edit Script: {{ $script->title }}</x-slot>
 
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 
-    <div class="mb-6">
+    <div class="mb-6 flex justify-between items-center">
         <a href="{{ route('admin.scripts.index') }}" class="inline-flex items-center gap-2 text-sm font-bold text-zinc-500 hover:text-zinc-900 transition-colors">
             <span>⬅️</span> Back to Scripts
         </a>
@@ -11,7 +12,7 @@
 
     <div class="bg-white rounded-2xl border border-zinc-200 shadow-sm overflow-hidden max-w-5xl">
         <div class="p-6 border-b border-zinc-200 bg-zinc-50/50">
-            <h3 class="text-lg font-bold text-zinc-900">Update Script: {{ $script->title }}</h3>
+            <h3 class="text-lg font-bold text-zinc-900">Edit Script & Links</h3>
         </div>
 
         <form action="{{ route('admin.scripts.update', $script->id) }}" method="POST" enctype="multipart/form-data" class="p-6 space-y-6">
@@ -28,16 +29,18 @@
                     <label class="block text-sm font-bold text-zinc-700">Category</label>
                     <select name="category_id" required class="block w-full px-4 py-3 rounded-xl border border-zinc-200 bg-zinc-50/50 text-zinc-900 focus:bg-white focus:border-zinc-900 focus:ring-2 focus:ring-zinc-900/20 transition-all cursor-pointer">
                         @foreach($categories as $category)
-                            <option value="{{ $category->id }}" {{ (old('category_id', $script->category_id) == $category->id) ? 'selected' : '' }}>{{ $category->name }}</option>
+                            <option value="{{ $category->id }}" {{ $script->category_id == $category->id ? 'selected' : '' }}>
+                                {{ $category->name }}
+                            </option>
                         @endforeach
                     </select>
                 </div>
 
                 <div class="space-y-1.5">
-                    <label class="block text-sm font-bold text-zinc-700">Update Main Thumbnail <span class="text-zinc-400 font-normal">(Opsional)</span></label>
+                    <label class="block text-sm font-bold text-zinc-700">Main Thumbnail (Biarkan kosong jika tidak diganti)</label>
                     @if($script->image)
                         <div class="mb-2">
-                            <img src="{{ Storage::url($script->image) }}" class="w-16 h-12 object-cover rounded-lg border border-zinc-200 shadow-sm">
+                            <img src="{{ Storage::url($script->image) }}" class="h-16 w-24 object-cover rounded-lg border border-zinc-200">
                         </div>
                     @endif
                     <input type="file" name="image" accept="image/*" class="block w-full px-4 py-2.5 rounded-xl border border-zinc-200 bg-zinc-50/50 text-sm">
@@ -46,39 +49,47 @@
                 <div class="space-y-1.5 md:col-span-2 border-b border-zinc-100 pb-6" x-data="{
                     templates: {{ isset($templates) ? $templates->toJson() : '[]' }},
                     selectedTemplate: '',
-                    descText: `{{ old('description', $script->description ?? '') }}`,
+                    descText: `{{ old('description', $script->description) }}`,
                     fillTemplate() {
                         if(this.selectedTemplate !== '') {
                             const tmpl = this.templates.find(t => t.id == this.selectedTemplate);
-                            if(tmpl) {
-                                this.descText = tmpl.content; 
-                            }
+                            if(tmpl) this.descText = tmpl.content; 
                         }
                     }
                 }">
                     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2">
                         <label class="block text-sm font-bold text-zinc-700">Description</label>
-                        
                         <select x-model="selectedTemplate" @change="fillTemplate()" class="text-sm border-zinc-200 rounded-lg bg-zinc-100 py-1.5 pl-3 pr-8 focus:ring-zinc-900 focus:border-zinc-900 font-medium text-zinc-700 cursor-pointer hover:bg-zinc-200 transition-colors shadow-sm">
-                            <option value="">Gunakan Template Deskripsi...</option>
+                            <option value="">Ganti menggunakan Template Deskripsi...</option>
                             <template x-for="t in templates" :key="t.id">
                                 <option :value="t.id" x-text="t.name"></option>
                             </template>
                         </select>
                     </div>
-    
-                    <textarea name="description" x-model="descText" rows="6" required placeholder="Pilih template di atas, atau ketik manual deskripsimu di sini..."
-                        class="block w-full px-4 py-3.5 rounded-xl border border-zinc-200 bg-zinc-50/50 text-zinc-900 focus:bg-white focus:border-zinc-900 focus:ring-2 focus:ring-zinc-900/20 transition-all duration-300 resize-y"></textarea>
-                    
-                    @error('description') 
-                        <p class="mt-2 text-red-600 font-medium text-sm">{{ $message }}</p> 
-                    @enderror
+                    <textarea name="description" x-model="descText" rows="6" required placeholder="Ketik manual atau pilih template..." class="block w-full px-4 py-3.5 rounded-xl border border-zinc-200 bg-zinc-50/50 text-zinc-900 focus:bg-white focus:border-zinc-900 focus:ring-2 focus:ring-zinc-900/20 transition-all duration-300 resize-y"></textarea>
                 </div>
             </div>
 
             <div class="mt-8">
-                <h3 class="text-lg font-bold text-zinc-900 mb-4 border-b pb-2">Manage Download Links (Drag Icon ⇅ untuk mengurutkan)</h3>
+                <h3 class="text-lg font-bold text-zinc-900 mb-4 border-b pb-2">Download Links (Drag ⇅ untuk mengurutkan)</h3>
                 
+                <div class="mb-4 flex flex-col sm:flex-row items-end gap-3 bg-zinc-50/80 p-4 rounded-xl border border-zinc-200">
+                    <div class="flex-1 w-full">
+                        <label class="block text-xs font-bold text-zinc-500 mb-1.5 uppercase tracking-wider">Tambah Varian Cepat (Insert Template)</label>
+                        <select id="replaceTemplateSelect" class="block w-full px-4 py-2.5 rounded-lg border border-zinc-200 bg-white text-sm font-medium focus:ring-2 focus:ring-zinc-900/20 focus:border-zinc-900 transition-all cursor-pointer">
+                            <option value="">-- Pilih Hero / Grup Template --</option>
+                            @foreach($replaceTemplates as $rt)
+                                <option value="{{ $rt->id }}" data-items="{{ $rt->items->toJson() }}">
+                                    {{ $rt->name }} ({{ $rt->items->count() }} Varian)
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <button type="button" onclick="addFromTemplate()" class="w-full sm:w-auto px-5 py-2.5 bg-zinc-900 text-white text-sm font-bold rounded-lg hover:bg-zinc-800 transition-all active:scale-95 whitespace-nowrap shadow-sm">
+                        ➕ Insert Varian
+                    </button>
+                </div>
+
                 <div class="border border-zinc-200 rounded-xl overflow-hidden bg-white shadow-sm overflow-x-auto">
                     <table class="w-full min-w-[1050px] text-sm text-left whitespace-nowrap">
                         <thead class="bg-zinc-50 border-b border-zinc-200 text-xs uppercase text-zinc-500 font-bold">
@@ -91,23 +102,7 @@
                             </tr>
                         </thead>
                         <tbody id="links-container" class="divide-y divide-zinc-100">
-                            
-                            @forelse($script->links()->get() as $index => $link)
-                                @php
-                                    // Deteksi tipe gambar saat ini
-                                    $imageType = 'none';
-                                    $imageUrlPreview = null;
-                                    
-                                    if ($link->image) {
-                                        if (Str::startsWith($link->image, ['http://', 'https://'])) {
-                                            $imageType = 'url';
-                                            $imageUrlPreview = $link->image;
-                                        } else {
-                                            $imageType = 'file';
-                                            $imageUrlPreview = Storage::url($link->image);
-                                        }
-                                    }
-                                @endphp
+                            @foreach($script->links as $index => $link)
                                 <tr class="link-item bg-white hover:bg-zinc-50 transition-colors">
                                     <input type="hidden" name="links[{{ $index }}][id]" value="{{ $link->id }}">
                                     
@@ -115,28 +110,36 @@
                                         <svg class="w-6 h-6 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
                                     </td>
                                     <td class="px-4 py-3 align-top">
-                                        <input type="text" name="links[{{ $index }}][replace_name]" value="{{ $link->replace_name }}" class="w-full form-control rounded-lg border-zinc-300 text-sm py-2 px-3" required>
+                                        <input type="text" name="links[{{ $index }}][replace_name]" value="{{ $link->replace_name }}" class="w-full form-control rounded-lg border-zinc-300 text-sm py-2 px-3 focus:ring-zinc-900 focus:border-zinc-900" required>
                                     </td>
                                     <td class="px-4 py-3 align-top">
-                                        <input type="url" name="links[{{ $index }}][url]" value="{{ $link->url }}" class="w-full form-control rounded-lg border-zinc-300 text-sm py-2 px-3" required>
+                                        <input type="url" name="links[{{ $index }}][url]" value="{{ $link->url }}" class="w-full form-control rounded-lg border-zinc-300 text-sm py-2 px-3 focus:ring-zinc-900 focus:border-zinc-900" required>
                                     </td>
                                     <td class="px-4 py-3 align-top min-w-[250px]">
                                         <div class="flex flex-col gap-2 w-full">
-                                            @if($imageUrlPreview)
-                                                <div>
-                                                    <img src="{{ $imageUrlPreview }}" referrerpolicy="no-referrer" class="h-10 w-auto rounded border border-zinc-200 object-cover">
+                                            @php
+                                                // Deteksi jenis gambar bawaan dari database (url atau file lokal)
+                                                $imgType = 'none';
+                                                if($link->image) {
+                                                    $imgType = Str::startsWith($link->image, ['http://', 'https://']) ? 'url' : 'file';
+                                                }
+                                            @endphp
+
+                                            <select name="links[{{ $index }}][image_type]" class="w-full form-select rounded-lg border-zinc-300 text-sm image-type-select py-2 px-3 bg-zinc-50" onchange="toggleImageType(this, {{ $index }})">
+                                                <option value="none" {{ $imgType == 'none' ? 'selected' : '' }}>Kosong / Default 📷</option>
+                                                <option value="file" {{ $imgType == 'file' ? 'selected' : '' }}>Upload File dari Komputer</option>
+                                                <option value="url" {{ $imgType == 'url' ? 'selected' : '' }}>Pakai Link URL</option>
+                                            </select>
+
+                                            @if($imgType == 'file' && $link->image)
+                                                <div class="mt-1 flex items-center gap-2">
+                                                    <img src="{{ Storage::url($link->image) }}" class="h-8 w-12 object-cover rounded border border-zinc-200">
+                                                    <span class="text-xs text-zinc-500">File Tersimpan</span>
                                                 </div>
                                             @endif
-                                            
-                                            <select name="links[{{ $index }}][image_type]" class="w-full form-select rounded-lg border-zinc-300 text-sm image-type-select py-2 px-3 bg-zinc-50 truncate" onchange="toggleImageType(this, {{ $index }})">
-                                                <option value="none" {{ $imageType == 'none' ? 'selected' : '' }}>Kosong / Default 📷</option>
-                                                <option value="file" {{ $imageType == 'file' ? 'selected' : '' }}>Ganti File dari Komputer</option>
-                                                <option value="url" {{ $imageType == 'url' ? 'selected' : '' }}>Ganti Link (Wikia/Fandom)</option>
-                                            </select>
-                                            
-                                            <input type="file" name="links[{{ $index }}][image_file]" class="w-full form-control text-sm image-input-file {{ $imageType == 'file' ? '' : 'hidden' }}" accept="image/*">
-                                            
-                                            <input type="url" name="links[{{ $index }}][image_url]" value="{{ $imageType == 'url' ? $link->image : '' }}" class="w-full form-control rounded-lg border-zinc-300 text-sm image-input-url {{ $imageType == 'url' ? '' : 'hidden' }} py-2 px-3" placeholder="https://static.wikia...">
+
+                                            <input type="file" name="links[{{ $index }}][image_file]" class="w-full form-control text-sm image-input-file {{ $imgType == 'file' ? '' : 'hidden' }}" accept="image/*">
+                                            <input type="url" name="links[{{ $index }}][image_url]" value="{{ $imgType == 'url' ? $link->image : '' }}" class="w-full form-control rounded-lg border-zinc-300 text-sm image-input-url {{ $imgType == 'url' ? '' : 'hidden' }} py-2 px-3 focus:ring-zinc-900" placeholder="https://...">
                                         </div>
                                     </td>
                                     <td class="px-4 py-3 text-center align-top pt-4">
@@ -145,9 +148,7 @@
                                         </button>
                                     </td>
                                 </tr>
-                            @empty
-                                @endforelse
-                            
+                            @endforeach
                         </tbody>
                     </table>
                 </div>
@@ -155,55 +156,77 @@
                 <div class="mt-4 flex justify-center">
                     <button type="button" onclick="addLink()" class="inline-flex items-center gap-2 px-6 py-2.5 bg-zinc-100 border border-zinc-300 text-zinc-800 text-sm font-bold rounded-xl hover:bg-zinc-200 transition-colors shadow-sm active:scale-95">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
-                        Tambah Baris Varian
+                        Tambah Baris Kosong
                     </button>
                 </div>
             </div>
 
             <div class="pt-6 border-t border-zinc-200">
                 <button type="submit" class="w-full md:w-auto inline-flex justify-center items-center py-3.5 px-8 border border-transparent rounded-xl shadow-lg text-base font-bold text-white bg-zinc-900 hover:bg-zinc-800 transition-all duration-300 active:scale-95">
-                    Save Changes
+                    Update Script
                 </button>
             </div>
         </form>
     </div>
 
     <script>
-        // Mulai index dari total row saat ini supaya tidak bentrok
-        let linkIndex = {{ $script->links()->count() > 0 ? $script->links()->count() : 1 }};
+        let linkIndex = {{ $script->links->count() }}; // Set default index dari jumlah link yang ada
 
         document.addEventListener("DOMContentLoaded", function() {
             const container = document.getElementById('links-container');
             new Sortable(container, {
-                handle: '.drag-handle', 
-                animation: 150,
-                ghostClass: 'bg-zinc-100', 
+                handle: '.drag-handle', animation: 150, ghostClass: 'bg-zinc-100', 
                 onEnd: function () { reindexLinks(); }
             });
         });
 
-        function addLink() {
+        function addFromTemplate() {
+            const select = document.getElementById('replaceTemplateSelect');
+            const option = select.options[select.selectedIndex];
+            if (!option.value) { alert('Pilih template dari dropdown terlebih dahulu!'); return; }
+
+            const itemsData = option.getAttribute('data-items');
+            if (itemsData) {
+                const items = JSON.parse(itemsData);
+                if (items.length === 0) { alert('Template ini belum memiliki varian/item di dalamnya!'); return; }
+                items.forEach(item => {
+                    let imageVal = item.image;
+                    let finalType = 'none';
+                    if ((item.image_type === 'file' || item.image_type === 'url') && imageVal) {
+                        finalType = 'url';
+                        if (item.image_type === 'file' && !imageVal.startsWith('http')) {
+                            imageVal = '{{ Storage::url("") }}' + imageVal; 
+                        }
+                    }
+                    addLink(item.replace_text, finalType, imageVal);
+                });
+            }
+            select.value = ''; 
+        }
+
+        function addLink(defaultText = '', defaultImgType = 'none', defaultImgUrl = '') {
             const container = document.getElementById('links-container');
+            const isUrl = defaultImgType === 'url';
             const html = `
                 <tr class="link-item bg-white hover:bg-zinc-50 transition-colors">
                     <td class="px-4 py-3 text-center align-top cursor-move drag-handle text-zinc-400 hover:text-zinc-900 pt-5">
                         <svg class="w-6 h-6 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
                     </td>
                     <td class="px-4 py-3 align-top">
-                        <input type="text" name="links[${linkIndex}][replace_name]" class="w-full form-control rounded-lg border-zinc-300 text-sm py-2 px-3" placeholder="Ex: Gusion Venom" required>
+                        <input type="text" name="links[${linkIndex}][replace_name]" value="${defaultText}" class="w-full form-control rounded-lg border-zinc-300 text-sm py-2 px-3 focus:ring-zinc-900" required>
                     </td>
                     <td class="px-4 py-3 align-top">
-                        <input type="url" name="links[${linkIndex}][url]" class="w-full form-control rounded-lg border-zinc-300 text-sm py-2 px-3" placeholder="https://..." required>
+                        <input type="url" name="links[${linkIndex}][url]" class="w-full form-control rounded-lg border-zinc-300 text-sm py-2 px-3 focus:ring-zinc-900" required>
                     </td>
                     <td class="px-4 py-3 align-top min-w-[250px]">
                         <div class="flex flex-col gap-2 w-full">
-                            <select name="links[${linkIndex}][image_type]" class="w-full form-select rounded-lg border-zinc-300 text-sm image-type-select py-2 px-3 bg-zinc-50 truncate" onchange="toggleImageType(this, ${linkIndex})">
-                                <option value="none" selected>Kosong / Default 📷</option>
+                            <select name="links[${linkIndex}][image_type]" class="w-full form-select rounded-lg border-zinc-300 text-sm image-type-select py-2 px-3 bg-zinc-50" onchange="toggleImageType(this, ${linkIndex})">
+                                <option value="none" ${defaultImgType === 'none' ? 'selected' : ''}>Kosong / Default 📷</option>
                                 <option value="file">Upload File dari Komputer</option>
-                                <option value="url">Pakai Link (Wikia/Fandom)</option>
+                                <option value="url" ${defaultImgType === 'url' ? 'selected' : ''}>Pakai Link URL</option>
                             </select>
                             <input type="file" name="links[${linkIndex}][image_file]" class="w-full form-control text-sm image-input-file hidden" accept="image/*">
-                            <input type="url" name="links[${linkIndex}][image_url]" class="w-full form-control rounded-lg border-zinc-300 text-sm image-input-url hidden py-2 px-3" placeholder="https://static.wikia...">
+                            <input type="url" name="links[${linkIndex}][image_url]" value="${defaultImgUrl}" class="w-full form-control rounded-lg border-zinc-300 text-sm image-input-url ${isUrl ? '' : 'hidden'} py-2 px-3 focus:ring-zinc-900" placeholder="https://...">
                         </div>
                     </td>
                     <td class="px-4 py-3 text-center align-top pt-4">
@@ -222,47 +245,28 @@
             const row = selectElement.closest('.link-item');
             const fileInput = row.querySelector('.image-input-file');
             const urlInput = row.querySelector('.image-input-url');
-
             if (selectElement.value === 'file') {
-                fileInput.classList.remove('hidden');
-                urlInput.classList.add('hidden');
-                urlInput.value = ''; 
+                fileInput.classList.remove('hidden'); urlInput.classList.add('hidden'); urlInput.value = ''; 
             } else if (selectElement.value === 'url') {
-                urlInput.classList.remove('hidden');
-                fileInput.classList.add('hidden');
-                fileInput.value = ''; 
+                urlInput.classList.remove('hidden'); fileInput.classList.add('hidden'); fileInput.value = ''; 
             } else {
-                fileInput.classList.add('hidden');
-                urlInput.classList.add('hidden');
-                fileInput.value = '';
-                urlInput.value = '';
+                fileInput.classList.add('hidden'); urlInput.classList.add('hidden'); fileInput.value = ''; urlInput.value = '';
             }
         }
 
         function removeLink(button) {
             const tbody = document.getElementById('links-container');
-            if (tbody.children.length === 1) {
-                alert("Minimal harus ada 1 link download!");
-                return;
-            }
-            if(confirm('Hapus baris link ini?')) {
-                button.closest('.link-item').remove();
-                reindexLinks(); 
-            }
+            if (tbody.children.length === 1) { alert("Minimal harus ada 1 link download!"); return; }
+            if(confirm('Hapus baris link ini?')) { button.closest('.link-item').remove(); reindexLinks(); }
         }
 
         function reindexLinks() {
             document.querySelectorAll('#links-container .link-item').forEach((row, newIndex) => {
                 row.querySelectorAll('input, select').forEach(input => {
-                    if (input.name) {
-                        // Secara pintar mengganti [0], [1] menjadi urutan yang benar
-                        input.name = input.name.replace(/links\[\d+\]/, `links[${newIndex}]`);
-                    }
+                    if (input.name) input.name = input.name.replace(/links\[\d+\]/, `links[${newIndex}]`);
                 });
                 const select = row.querySelector('.image-type-select');
-                if(select) {
-                    select.setAttribute('onchange', `toggleImageType(this, ${newIndex})`);
-                }
+                if(select) select.setAttribute('onchange', `toggleImageType(this, ${newIndex})`);
             });
         }
     </script>

@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Storage;
 use App\Models\ScriptTemplate;
+use App\Models\ReplaceTemplate;
 
 class ScriptController extends Controller
 {
@@ -27,11 +28,14 @@ class ScriptController extends Controller
 
     public function create()
     {
-        // Ambil semua kategori dan template untuk dimasukkan ke form
         $categories = Category::orderBy('name', 'asc')->get();
-        $templates = ScriptTemplate::orderBy('name', 'asc')->get();
+        $templates = ScriptTemplate::orderBy('name', 'asc')->get(); 
         
-        return view('admin.scripts.create', compact('categories', 'templates'));
+        // TAMBAHKAN BARIS INI (Ambil data template beserta item variannya)
+        $replaceTemplates = ReplaceTemplate::with('items')->orderBy('name', 'asc')->get(); 
+        
+        // MASUKKAN JUGA KE DALAM COMPACT
+        return view('admin.scripts.create', compact('categories', 'templates', 'replaceTemplates'));
     }
 
     public function store(Request $request)
@@ -91,9 +95,13 @@ class ScriptController extends Controller
         $categories = Category::orderBy('name', 'asc')->get();
         $templates = ScriptTemplate::orderBy('name', 'asc')->get(); 
         
-        $script->load('links');
+        // TAMBAHKAN BARIS INI JUGA UNTUK HALAMAN EDIT
+        $replaceTemplates = ReplaceTemplate::with('items')->orderBy('name', 'asc')->get(); 
         
-        return view('admin.scripts.edit', compact('script', 'categories', 'templates'));
+        $script->load('links'); 
+        
+        // MASUKKAN KE DALAM COMPACT
+        return view('admin.scripts.edit', compact('script', 'categories', 'templates', 'replaceTemplates'));
     }
 
     public function update(Request $request, Script $script)
