@@ -84,7 +84,7 @@
 
             <div class="p-6 border-t border-zinc-200 bg-zinc-50/50">
                 <button type="submit" class="w-full md:w-auto inline-flex justify-center items-center py-3.5 px-8 border border-transparent rounded-xl shadow-lg text-base font-bold text-white bg-zinc-900 hover:bg-zinc-800 transition-all duration-300 active:scale-95">
-                    💾 Update Template
+                    Update Template
                 </button>
             </div>
         </form>

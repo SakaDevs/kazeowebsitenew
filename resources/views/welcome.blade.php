@@ -35,7 +35,9 @@
         <section class="relative">
             <div class="flex items-center justify-between mb-4 sm:mb-6">
                 <h2 class="text-xl sm:text-2xl font-black text-zinc-900 tracking-tight">Script Terbaru</h2>
-                <a href="{{ route('categories.index') }}" class="text-xs sm:text-sm font-bold text-red-700 hover:text-red-800 transition-colors">Lihat Semua &rarr;</a>
+                <a href="{{ route('scripts.all') }}" class="text-xs sm:text-sm font-bold text-red-700 hover:text-red-800 transition-colors">
+                    Lihat Semua &rarr;
+                </a>
             </div>
 
             <div class="swiper scriptSwiper px-2 sm:px-4 py-4 -mx-2 sm:-mx-4">

@@ -173,3 +173,22 @@ Route::post('/log-download', function (Request $request) {
 Route::get('/check-download', function () {
     return response()->json(Cache::get('latest_global_download'));
 })->name('check.download');
+
+Route::get('/all-script', function (\Illuminate\Http\Request $request) {
+    // Ambil data dengan paginasi (misal 12 data per load)
+    $scripts = \App\Models\Script::with(['category', 'user'])->latest()->paginate(12);
+
+    // Jika request datang dari Javascript (saat user scroll ke bawah)
+    if ($request->ajax()) {
+        // Render view partials saja, lalu kirim dalam bentuk JSON
+        $view = view('partials.script-cards', compact('scripts'))->render();
+        
+        return response()->json([
+            'html' => $view,
+            'hasMore' => $scripts->hasMorePages()
+        ]);
+    }
+
+    // Jika load halaman pertama kali
+    return view('all-scripts', compact('scripts'));
+})->name('scripts.all');
