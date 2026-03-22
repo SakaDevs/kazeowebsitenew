@@ -52,17 +52,17 @@
                 </div>
 
                 <div class="space-y-1.5 md:col-span-2 border-b border-zinc-100 pb-6" 
-                    x-data="{
-                        templates: @js($templates ?? []),
-                        selectedTemplate: '',
-                        descText: @js(old('description', $script->description ?? '')),
+                    x-data='{
+                        templates: @json($templates ?? []),
+                        selectedTemplate: "",
+                        descText: @json(old("description", $script->description ?? "")),
                         fillTemplate() {
-                            if(this.selectedTemplate !== '') {
+                            if(this.selectedTemplate !== "") {
                                 const tmpl = this.templates.find(t => t.id == this.selectedTemplate);
                                 if(tmpl) this.descText = tmpl.content; 
                             }
                         }
-                    }">
+                    }'>
                     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2">
                         <label class="block text-sm font-bold text-zinc-700">Description</label>
                         <select x-model="selectedTemplate" @change="fillTemplate()" class="text-sm border-zinc-200 rounded-lg bg-zinc-100 py-1.5 pl-3 pr-8 focus:ring-zinc-900 focus:border-zinc-900 font-medium text-zinc-700 cursor-pointer hover:bg-zinc-200 transition-colors shadow-sm">
