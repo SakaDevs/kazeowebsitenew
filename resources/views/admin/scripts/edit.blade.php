@@ -175,7 +175,7 @@
     </div>
 
     <script>
-        let linkIndex = {{ $script->links->count() }}; 
+        let linkIndex = {{ $script->links ? $script->links->count() : 0 }};
 
         document.addEventListener("DOMContentLoaded", function() {
             const container = document.getElementById('links-container');
