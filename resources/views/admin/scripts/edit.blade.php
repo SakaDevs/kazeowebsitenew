@@ -51,17 +51,23 @@
                     </div>
                 </div>
 
-                <div class="space-y-1.5 md:col-span-2 border-b border-zinc-100 pb-6" x-data="{
-                    templates: {{ isset($templates) ? $templates->toJson() : '[]' }},
-                    selectedTemplate: '',
-                    descText: {!! json_encode(old('description', $script->description)) !!},
-                    fillTemplate() {
-                        if(this.selectedTemplate !== '') {
-                            const tmpl = this.templates.find(t => t.id == this.selectedTemplate);
-                            if(tmpl) this.descText = tmpl.content; 
+                <div class="space-y-1.5 md:col-span-2 border-b border-zinc-100 pb-6" 
+                    x-data="{
+                        templates: [],
+                        selectedTemplate: '',
+                        descText: '',
+                        fillTemplate() {
+                            if(this.selectedTemplate !== '') {
+                                const tmpl = this.templates.find(t => t.id == this.selectedTemplate);
+                                if(tmpl) this.descText = tmpl.content; 
+                            }
                         }
-                    }
-                }">
+                    }"
+                    x-init="
+                        templates = {{ Js::from($templates ?? []) }};
+                        descText = {{ Js::from(old('description', $script->description)) }};
+                    "
+                >
                     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2">
                         <label class="block text-sm font-bold text-zinc-700">Description</label>
                         <select x-model="selectedTemplate" @change="fillTemplate()" class="text-sm border-zinc-200 rounded-lg bg-zinc-100 py-1.5 pl-3 pr-8 focus:ring-zinc-900 focus:border-zinc-900 font-medium text-zinc-700 cursor-pointer hover:bg-zinc-200 transition-colors shadow-sm">
@@ -107,13 +113,15 @@
                             </tr>
                         </thead>
                         <tbody id="links-container" class="divide-y divide-zinc-100">
-                            <tbody id="links-container" class="divide-y divide-zinc-100">
-                                @foreach($script->links ?? [] as $index => $link)
-                                    <input type="hidden" name="links[{{ $index }}][id]" value="{{ $link->id }}">
+                            @foreach($script->links ?? [] as $index => $link)
+                                <tr class="link-item bg-white hover:bg-zinc-50 transition-colors">
                                     
                                     <td class="px-4 py-3 text-center align-top cursor-move drag-handle text-zinc-400 hover:text-zinc-900 pt-5">
+                                        <input type="hidden" name="links[{{ $index }}][id]" value="{{ $link->id }}">
+                                        
                                         <svg class="w-6 h-6 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
                                     </td>
+                                    
                                     <td class="px-4 py-3 align-top">
                                         <input type="text" name="links[{{ $index }}][replace_name]" value="{{ $link->replace_name }}" class="w-full form-control rounded-lg border-zinc-300 text-sm py-2 px-3 focus:ring-zinc-900 focus:border-zinc-900" required>
                                     </td>
@@ -168,14 +176,14 @@
 
             <div class="pt-6 border-t border-zinc-200">
                 <button type="submit" class="w-full md:w-auto inline-flex justify-center items-center py-3.5 px-8 border border-transparent rounded-xl shadow-lg text-base font-bold text-white bg-zinc-900 hover:bg-zinc-800 transition-all duration-300 active:scale-95">
-                    Update Script
+                    💾 Update Script
                 </button>
             </div>
         </form>
     </div>
 
     <script>
-        let linkIndex = {{ $script->links ? $script->links->count() : 0 }};
+        let linkIndex = {{ $script->links ? $script->links->count() : 0 }}; 
 
         document.addEventListener("DOMContentLoaded", function() {
             const container = document.getElementById('links-container');
@@ -185,7 +193,6 @@
             });
         });
 
-        // FUNGSI PREVIEW IMAGE (DITAMBAHKAN KEMBALI)
         function previewMainImage(input) {
             const previewContainer = document.getElementById('mainImagePreviewContainer');
             const previewImage = document.getElementById('mainImagePreview');
@@ -216,7 +223,6 @@
             }
         }
 
-        // FUNGSI UNTUK RESET PREVIEW JIKA TIPE DIGANTI
         function toggleImageType(selectElement, index) {
             const row = selectElement.closest('.link-item');
             const fileInput = row.querySelector('.image-input-file');
@@ -242,7 +248,7 @@
             const itemsData = option.getAttribute('data-items');
             if (itemsData) {
                 const items = JSON.parse(itemsData);
-                if (items.length === 0) { alert('Template ini belum memiliki varian!'); return; }
+                if (items.length === 0) { alert('Template ini belum memiliki varian/item di dalamnya!'); return; }
                 items.forEach(item => {
                     let imageVal = item.image;
                     let finalType = 'none';
