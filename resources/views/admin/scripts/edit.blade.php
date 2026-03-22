@@ -53,21 +53,16 @@
 
                 <div class="space-y-1.5 md:col-span-2 border-b border-zinc-100 pb-6" 
                     x-data="{
-                        templates: [],
+                        templates: @js($templates ?? []),
                         selectedTemplate: '',
-                        descText: '',
+                        descText: @js(old('description', $script->description ?? '')),
                         fillTemplate() {
                             if(this.selectedTemplate !== '') {
                                 const tmpl = this.templates.find(t => t.id == this.selectedTemplate);
                                 if(tmpl) this.descText = tmpl.content; 
                             }
                         }
-                    }"
-                    x-init="
-                        templates = {{ Js::from($templates ?? []) }};
-                        descText = {{ Js::from(old('description', $script->description)) }};
-                    "
-                >
+                    }">
                     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2">
                         <label class="block text-sm font-bold text-zinc-700">Description</label>
                         <select x-model="selectedTemplate" @change="fillTemplate()" class="text-sm border-zinc-200 rounded-lg bg-zinc-100 py-1.5 pl-3 pr-8 focus:ring-zinc-900 focus:border-zinc-900 font-medium text-zinc-700 cursor-pointer hover:bg-zinc-200 transition-colors shadow-sm">
@@ -113,12 +108,11 @@
                             </tr>
                         </thead>
                         <tbody id="links-container" class="divide-y divide-zinc-100">
-                            @foreach($script->links ?? [] as $index => $link)
+                            @foreach($script->links()->get() as $index => $link)
                                 <tr class="link-item bg-white hover:bg-zinc-50 transition-colors">
                                     
                                     <td class="px-4 py-3 text-center align-top cursor-move drag-handle text-zinc-400 hover:text-zinc-900 pt-5">
                                         <input type="hidden" name="links[{{ $index }}][id]" value="{{ $link->id }}">
-                                        
                                         <svg class="w-6 h-6 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
                                     </td>
                                     
@@ -176,14 +170,15 @@
 
             <div class="pt-6 border-t border-zinc-200">
                 <button type="submit" class="w-full md:w-auto inline-flex justify-center items-center py-3.5 px-8 border border-transparent rounded-xl shadow-lg text-base font-bold text-white bg-zinc-900 hover:bg-zinc-800 transition-all duration-300 active:scale-95">
-                    💾 Update Script
+                    Update Script
                 </button>
             </div>
         </form>
     </div>
 
     <script>
-        let linkIndex = {{ $script->links ? $script->links->count() : 0 }}; 
+        // 🔴 FIX BUG VARIAN: Paksa panggil dari fungsi relasi
+        let linkIndex = {{ $script->links()->count() }}; 
 
         document.addEventListener("DOMContentLoaded", function() {
             const container = document.getElementById('links-container');
