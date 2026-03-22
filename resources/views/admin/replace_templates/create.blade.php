@@ -144,7 +144,7 @@
                             <input type="url" name="items[${itemIndex}][image_url]" class="w-full form-control rounded-lg border-zinc-300 text-sm image-input-url hidden py-2 px-3 focus:ring-zinc-900 focus:border-zinc-900" placeholder="https://..." oninput="previewItemImage(this, 'url')">
                             
                             <div class="item-preview-container hidden mt-1 flex items-center gap-2 bg-zinc-50 p-1.5 rounded-md border border-zinc-100">
-                                <img src="" class="item-preview-img h-12 w-20 object-cover rounded border border-zinc-200 shadow-sm bg-white">
+                                <img src="" referrerpolicy="no-referrer" class="item-preview-img h-12 w-20 object-cover rounded border border-zinc-200 shadow-sm bg-white">
                                 <div class="flex flex-col gap-0.5">
                                     <span class="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full uppercase tracking-wider">Preview</span>
                                     <span class="text-[9px] text-zinc-400 font-medium">Lokal / URL</span>

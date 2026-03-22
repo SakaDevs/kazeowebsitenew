@@ -39,7 +39,7 @@
                     
                     <div id="mainImagePreviewContainer" class="hidden mt-3">
                         <p class="text-xs font-bold text-zinc-500 mb-1">Preview:</p>
-                        <img id="mainImagePreview" src="" class="h-32 w-auto object-cover rounded-xl border border-zinc-200 shadow-sm">
+                        <img id="mainImagePreview" src="" referrerpolicy="no-referrer" class="h-32 w-auto object-cover rounded-xl border border-zinc-200 shadow-sm">
                     </div>
                 </div>
 
@@ -242,7 +242,7 @@
                             <input type="url" name="links[${linkIndex}][image_url]" value="${defaultImgUrl}" class="w-full form-control rounded-lg border-zinc-300 text-sm image-input-url ${isUrl ? '' : 'hidden'} py-2 px-3 focus:ring-zinc-900" placeholder="https://..." oninput="previewVariantImage(this, 'url')">
                             
                             <div class="variant-preview-container ${isUrl && defaultImgUrl ? '' : 'hidden'} mt-1 flex items-center gap-2">
-                                <img src="${isUrl ? defaultImgUrl : ''}" class="variant-preview-img h-10 w-16 object-cover rounded border border-zinc-200 shadow-sm">
+                                <img src="${isUrl ? defaultImgUrl : ''}" referrerpolicy="no-referrer" class="variant-preview-img h-10 w-16 object-cover rounded border border-zinc-200 shadow-sm">
                                 <span class="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded uppercase">Preview</span>
                             </div>
                         </div>
