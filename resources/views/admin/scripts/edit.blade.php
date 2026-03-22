@@ -52,17 +52,19 @@
                 </div>
 
                 <div class="space-y-1.5 md:col-span-2 border-b border-zinc-100 pb-6" 
-                    x-data='{
-                        templates: @json($templates ?? []),
-                        selectedTemplate: "",
-                        descText: @json(old("description", $script->description ?? "")),
+                    x-data="{
+                        templates: {{ isset($templates) ? $templates->toJson() : '[]' }},
+                        selectedTemplate: '',
+                        descText: '',
                         fillTemplate() {
-                            if(this.selectedTemplate !== "") {
+                            if(this.selectedTemplate !== '') {
                                 const tmpl = this.templates.find(t => t.id == this.selectedTemplate);
                                 if(tmpl) this.descText = tmpl.content; 
                             }
                         }
-                    }'>
+                    }"
+                    x-init="descText = $refs.descInput.value"
+                >
                     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2">
                         <label class="block text-sm font-bold text-zinc-700">Description</label>
                         <select x-model="selectedTemplate" @change="fillTemplate()" class="text-sm border-zinc-200 rounded-lg bg-zinc-100 py-1.5 pl-3 pr-8 focus:ring-zinc-900 focus:border-zinc-900 font-medium text-zinc-700 cursor-pointer hover:bg-zinc-200 transition-colors shadow-sm">
@@ -72,7 +74,8 @@
                             </template>
                         </select>
                     </div>
-                    <textarea name="description" x-model="descText" rows="6" required placeholder="Ketik manual atau pilih template..." class="block w-full px-4 py-3.5 rounded-xl border border-zinc-200 bg-zinc-50/50 text-zinc-900 focus:bg-white focus:border-zinc-900 focus:ring-2 focus:ring-zinc-900/20 transition-all duration-300 resize-y"></textarea>
+                    
+                    <textarea x-ref="descInput" name="description" x-model="descText" rows="6" required placeholder="Ketik manual atau pilih template..." class="block w-full px-4 py-3.5 rounded-xl border border-zinc-200 bg-zinc-50/50 text-zinc-900 focus:bg-white focus:border-zinc-900 focus:ring-2 focus:ring-zinc-900/20 transition-all duration-300 resize-y">{{ old('description', $script->description) }}</textarea>
                 </div>
             </div>
 

@@ -77,9 +77,9 @@
             <table class="w-full text-left border-collapse">
                 <thead>
                     <tr class="bg-zinc-50/50 text-xs uppercase tracking-wider text-zinc-500 border-b border-zinc-200">
-                        <th class="px-6 py-4 font-bold">Judul Script</th>
+                        <th class="px-6 py-4 font-bold">Script</th>
                         <th class="px-6 py-4 font-bold">Kategori</th>
-                        <th class="px-6 py-4 font-bold">Uploader</th>
+                        <th class="px-6 py-4 font-bold">User</th>
                         <th class="px-6 py-4 font-bold text-right">Waktu</th>
                     </tr>
                 </thead>
