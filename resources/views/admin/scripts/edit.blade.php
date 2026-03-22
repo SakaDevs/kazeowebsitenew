@@ -43,13 +43,18 @@
                             <img src="{{ Storage::url($script->image) }}" class="h-16 w-24 object-cover rounded-lg border border-zinc-200">
                         </div>
                     @endif
-                    <input type="file" name="image" accept="image/*" class="block w-full px-4 py-2.5 rounded-xl border border-zinc-200 bg-zinc-50/50 text-sm">
+                    <input type="file" name="image" accept="image/*" class="block w-full px-4 py-2.5 rounded-xl border border-zinc-200 bg-zinc-50/50 text-sm" onchange="previewMainImage(this)">
+                    
+                    <div id="mainImagePreviewContainer" class="hidden mt-3">
+                        <p class="text-xs font-bold text-zinc-500 mb-1">Preview Baru:</p>
+                        <img id="mainImagePreview" src="" class="h-32 w-auto object-cover rounded-xl border border-zinc-200 shadow-sm">
+                    </div>
                 </div>
 
                 <div class="space-y-1.5 md:col-span-2 border-b border-zinc-100 pb-6" x-data="{
                     templates: {{ isset($templates) ? $templates->toJson() : '[]' }},
                     selectedTemplate: '',
-                    descText: `{{ old('description', $script->description) }}`,
+                    descText: {!! json_encode(old('description', $script->description)) !!},
                     fillTemplate() {
                         if(this.selectedTemplate !== '') {
                             const tmpl = this.templates.find(t => t.id == this.selectedTemplate);
@@ -118,10 +123,12 @@
                                     <td class="px-4 py-3 align-top min-w-[250px]">
                                         <div class="flex flex-col gap-2 w-full">
                                             @php
-                                                // Deteksi jenis gambar bawaan dari database (url atau file lokal)
                                                 $imgType = 'none';
+                                                $imgSrc = '';
                                                 if($link->image) {
-                                                    $imgType = Str::startsWith($link->image, ['http://', 'https://']) ? 'url' : 'file';
+                                                    $isUrl = Str::startsWith($link->image, ['http://', 'https://']);
+                                                    $imgType = $isUrl ? 'url' : 'file';
+                                                    $imgSrc = $isUrl ? $link->image : Storage::url($link->image);
                                                 }
                                             @endphp
 
@@ -131,15 +138,13 @@
                                                 <option value="url" {{ $imgType == 'url' ? 'selected' : '' }}>Pakai Link URL</option>
                                             </select>
 
-                                            @if($imgType == 'file' && $link->image)
-                                                <div class="mt-1 flex items-center gap-2">
-                                                    <img src="{{ Storage::url($link->image) }}" class="h-8 w-12 object-cover rounded border border-zinc-200">
-                                                    <span class="text-xs text-zinc-500">File Tersimpan</span>
-                                                </div>
-                                            @endif
-
-                                            <input type="file" name="links[{{ $index }}][image_file]" class="w-full form-control text-sm image-input-file {{ $imgType == 'file' ? '' : 'hidden' }}" accept="image/*">
-                                            <input type="url" name="links[{{ $index }}][image_url]" value="{{ $imgType == 'url' ? $link->image : '' }}" class="w-full form-control rounded-lg border-zinc-300 text-sm image-input-url {{ $imgType == 'url' ? '' : 'hidden' }} py-2 px-3 focus:ring-zinc-900" placeholder="https://...">
+                                            <input type="file" name="links[{{ $index }}][image_file]" class="w-full form-control text-sm image-input-file {{ $imgType == 'file' ? '' : 'hidden' }}" accept="image/*" onchange="previewVariantImage(this, 'file')">
+                                            <input type="url" name="links[{{ $index }}][image_url]" value="{{ $imgType == 'url' ? $link->image : '' }}" class="w-full form-control rounded-lg border-zinc-300 text-sm image-input-url {{ $imgType == 'url' ? '' : 'hidden' }} py-2 px-3 focus:ring-zinc-900" placeholder="https://..." oninput="previewVariantImage(this, 'url')">
+                                            
+                                            <div class="variant-preview-container {{ $imgType != 'none' ? '' : 'hidden' }} mt-1 flex items-center gap-2">
+                                                <img src="{{ $imgSrc }}" class="variant-preview-img h-10 w-16 object-cover rounded border border-zinc-200 shadow-sm">
+                                                <span class="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded uppercase">Preview</span>
+                                            </div>
                                         </div>
                                     </td>
                                     <td class="px-4 py-3 text-center align-top pt-4">
@@ -170,7 +175,7 @@
     </div>
 
     <script>
-        let linkIndex = {{ $script->links->count() }}; // Set default index dari jumlah link yang ada
+        let linkIndex = {{ $script->links->count() }}; 
 
         document.addEventListener("DOMContentLoaded", function() {
             const container = document.getElementById('links-container');
@@ -180,6 +185,55 @@
             });
         });
 
+        // FUNGSI PREVIEW IMAGE (DITAMBAHKAN KEMBALI)
+        function previewMainImage(input) {
+            const previewContainer = document.getElementById('mainImagePreviewContainer');
+            const previewImage = document.getElementById('mainImagePreview');
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) { previewImage.src = e.target.result; previewContainer.classList.remove('hidden'); }
+                reader.readAsDataURL(input.files[0]);
+            } else { previewContainer.classList.add('hidden'); previewImage.src = ''; }
+        }
+
+        function previewVariantImage(input, type) {
+            const container = input.closest('td');
+            const previewContainer = container.querySelector('.variant-preview-container');
+            const previewImg = container.querySelector('.variant-preview-img');
+
+            if (type === 'file') {
+                if (input.files && input.files[0]) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) { previewImg.src = e.target.result; previewContainer.classList.remove('hidden'); }
+                    reader.readAsDataURL(input.files[0]);
+                } else { previewContainer.classList.add('hidden'); }
+            } else if (type === 'url') {
+                const url = input.value;
+                if (url) {
+                    previewImg.src = url; previewContainer.classList.remove('hidden');
+                    previewImg.onerror = function() { previewContainer.classList.add('hidden'); };
+                } else { previewContainer.classList.add('hidden'); }
+            }
+        }
+
+        // FUNGSI UNTUK RESET PREVIEW JIKA TIPE DIGANTI
+        function toggleImageType(selectElement, index) {
+            const row = selectElement.closest('.link-item');
+            const fileInput = row.querySelector('.image-input-file');
+            const urlInput = row.querySelector('.image-input-url');
+            const previewContainer = row.querySelector('.variant-preview-container');
+            
+            if(previewContainer) previewContainer.classList.add('hidden');
+
+            if (selectElement.value === 'file') {
+                fileInput.classList.remove('hidden'); urlInput.classList.add('hidden'); urlInput.value = ''; 
+            } else if (selectElement.value === 'url') {
+                urlInput.classList.remove('hidden'); fileInput.classList.add('hidden'); fileInput.value = ''; 
+            } else {
+                fileInput.classList.add('hidden'); urlInput.classList.add('hidden'); fileInput.value = ''; urlInput.value = '';
+            }
+        }
+
         function addFromTemplate() {
             const select = document.getElementById('replaceTemplateSelect');
             const option = select.options[select.selectedIndex];
@@ -188,7 +242,7 @@
             const itemsData = option.getAttribute('data-items');
             if (itemsData) {
                 const items = JSON.parse(itemsData);
-                if (items.length === 0) { alert('Template ini belum memiliki varian/item di dalamnya!'); return; }
+                if (items.length === 0) { alert('Template ini belum memiliki varian!'); return; }
                 items.forEach(item => {
                     let imageVal = item.image;
                     let finalType = 'none';
@@ -207,6 +261,7 @@
         function addLink(defaultText = '', defaultImgType = 'none', defaultImgUrl = '') {
             const container = document.getElementById('links-container');
             const isUrl = defaultImgType === 'url';
+            
             const html = `
                 <tr class="link-item bg-white hover:bg-zinc-50 transition-colors">
                     <td class="px-4 py-3 text-center align-top cursor-move drag-handle text-zinc-400 hover:text-zinc-900 pt-5">
@@ -225,8 +280,13 @@
                                 <option value="file">Upload File dari Komputer</option>
                                 <option value="url" ${defaultImgType === 'url' ? 'selected' : ''}>Pakai Link URL</option>
                             </select>
-                            <input type="file" name="links[${linkIndex}][image_file]" class="w-full form-control text-sm image-input-file hidden" accept="image/*">
-                            <input type="url" name="links[${linkIndex}][image_url]" value="${defaultImgUrl}" class="w-full form-control rounded-lg border-zinc-300 text-sm image-input-url ${isUrl ? '' : 'hidden'} py-2 px-3 focus:ring-zinc-900" placeholder="https://...">
+                            <input type="file" name="links[${linkIndex}][image_file]" class="w-full form-control text-sm image-input-file hidden" accept="image/*" onchange="previewVariantImage(this, 'file')">
+                            <input type="url" name="links[${linkIndex}][image_url]" value="${defaultImgUrl}" class="w-full form-control rounded-lg border-zinc-300 text-sm image-input-url ${isUrl ? '' : 'hidden'} py-2 px-3 focus:ring-zinc-900" placeholder="https://..." oninput="previewVariantImage(this, 'url')">
+                            
+                            <div class="variant-preview-container ${isUrl && defaultImgUrl ? '' : 'hidden'} mt-1 flex items-center gap-2">
+                                <img src="${isUrl ? defaultImgUrl : ''}" class="variant-preview-img h-10 w-16 object-cover rounded border border-zinc-200 shadow-sm">
+                                <span class="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded uppercase">Preview</span>
+                            </div>
                         </div>
                     </td>
                     <td class="px-4 py-3 text-center align-top pt-4">
@@ -239,19 +299,6 @@
             container.insertAdjacentHTML('beforeend', html);
             linkIndex++;
             reindexLinks();
-        }
-
-        function toggleImageType(selectElement, index) {
-            const row = selectElement.closest('.link-item');
-            const fileInput = row.querySelector('.image-input-file');
-            const urlInput = row.querySelector('.image-input-url');
-            if (selectElement.value === 'file') {
-                fileInput.classList.remove('hidden'); urlInput.classList.add('hidden'); urlInput.value = ''; 
-            } else if (selectElement.value === 'url') {
-                urlInput.classList.remove('hidden'); fileInput.classList.add('hidden'); fileInput.value = ''; 
-            } else {
-                fileInput.classList.add('hidden'); urlInput.classList.add('hidden'); fileInput.value = ''; urlInput.value = '';
-            }
         }
 
         function removeLink(button) {

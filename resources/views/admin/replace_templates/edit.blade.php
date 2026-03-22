@@ -1,5 +1,5 @@
 <x-admin-layout>
-    <x-slot name="title">Edit Replace Template</x-slot>
+    <x-slot name="title">Edit Replace Template: {{ $replaceTemplate->name }}</x-slot>
 
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
 
@@ -28,8 +28,8 @@
                         <thead class="bg-zinc-50 border-b border-zinc-200 text-xs uppercase text-zinc-500 font-bold">
                             <tr>
                                 <th class="px-4 py-3 w-12 text-center">⇅</th>
-                                <th class="px-4 py-3 w-[40%]">Replace Text</th>
-                                <th class="px-4 py-3 w-[45%]">Gambar Varian</th>
+                                <th class="px-4 py-3 w-[35%]">Replace Text</th>
+                                <th class="px-4 py-3 w-[50%]">Gambar Varian</th>
                                 <th class="px-4 py-3 w-[15%] text-center">Aksi</th>
                             </tr>
                         </thead>
@@ -44,23 +44,41 @@
                                     <td class="px-4 py-3 align-top">
                                         <input type="text" name="items[{{ $index }}][replace_text]" value="{{ $item->replace_text }}" class="w-full form-control rounded-lg border-zinc-300 text-sm py-2 px-3 focus:ring-zinc-900 focus:border-zinc-900" required>
                                     </td>
-                                    <td class="px-4 py-3 align-top min-w-[250px]">
+                                    <td class="px-4 py-3 align-top min-w-[300px]">
                                         <div class="flex flex-col gap-2 w-full">
+                                            @php
+                                                // Logika deteksi gambar lama
+                                                $imgType = 'none';
+                                                $imgSrc = '';
+                                                if($item->image) {
+                                                    $isUrl = Str::startsWith($item->image, ['http://', 'https://']);
+                                                    $imgType = $isUrl ? 'url' : 'file';
+                                                    $imgSrc = $isUrl ? $item->image : Storage::url($item->image);
+                                                }
+                                            @endphp
+
                                             <select name="items[{{ $index }}][image_type]" class="w-full form-select rounded-lg border-zinc-300 text-sm image-type-select py-2 px-3 bg-zinc-50 focus:ring-zinc-900 focus:border-zinc-900" onchange="toggleImageType(this, {{ $index }})">
-                                                <option value="none" {{ $item->image_type == 'none' ? 'selected' : '' }}>Kosong / Default 📷</option>
-                                                <option value="file" {{ $item->image_type == 'file' ? 'selected' : '' }}>Upload File dari Komputer</option>
-                                                <option value="url" {{ $item->image_type == 'url' ? 'selected' : '' }}>Pakai Link URL</option>
+                                                <option value="none" {{ $imgType == 'none' ? 'selected' : '' }}>Kosong / Default 📷</option>
+                                                <option value="file" {{ $imgType == 'file' ? 'selected' : '' }}>Upload File dari Komputer</option>
+                                                <option value="url" {{ $imgType == 'url' ? 'selected' : '' }}>Pakai Link URL</option>
                                             </select>
                                             
-                                            @if($item->image_type == 'file' && $item->image)
-                                                <div class="mt-1 flex items-center gap-2">
-                                                    <img src="{{ Storage::url($item->image) }}" class="h-8 w-12 object-cover rounded border border-zinc-200">
-                                                    <span class="text-xs text-zinc-500">Gambar Terupload</span>
+                                            <input type="file" name="items[{{ $index }}][image_file]" class="w-full form-control text-sm image-input-file {{ $imgType == 'file' ? '' : 'hidden' }}" accept="image/*" onchange="previewItemImage(this, 'file')">
+                                            
+                                            <input type="url" name="items[{{ $index }}][image_url]" value="{{ $imgType == 'url' ? $item->image : '' }}" class="w-full form-control rounded-lg border-zinc-300 text-sm image-input-url {{ $imgType == 'url' ? '' : 'hidden' }} py-2 px-3 focus:ring-zinc-900 focus:border-zinc-900" placeholder="https://..." oninput="previewItemImage(this, 'url')">
+                                            
+                                            <div class="item-preview-container {{ $imgType != 'none' ? '' : 'hidden' }} mt-1 flex items-center gap-2 bg-zinc-50 p-1.5 rounded-md border border-zinc-100">
+                                                <img src="{{ $imgSrc }}" class="item-preview-img h-12 w-20 object-cover rounded border border-zinc-200 shadow-sm bg-white">
+                                                <div class="flex flex-col gap-0.5">
+                                                    <span class="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full uppercase tracking-wider">Preview</span>
+                                                    @if($imgType == 'file')
+                                                        <span class="text-[9px] text-zinc-400 font-medium">Tersimpan di Server</span>
+                                                    @elseif($imgType == 'url')
+                                                        <span class="text-[9px] text-zinc-400 font-medium">Dari Link Luar</span>
+                                                    @endif
                                                 </div>
-                                            @endif
+                                            </div>
 
-                                            <input type="file" name="items[{{ $index }}][image_file]" class="w-full form-control text-sm image-input-file {{ $item->image_type == 'file' ? '' : 'hidden' }}" accept="image/*">
-                                            <input type="url" name="items[{{ $index }}][image_url]" value="{{ $item->image_type == 'url' ? $item->image : '' }}" class="w-full form-control rounded-lg border-zinc-300 text-sm image-input-url {{ $item->image_type == 'url' ? '' : 'hidden' }} py-2 px-3 focus:ring-zinc-900 focus:border-zinc-900" placeholder="https://...">
                                         </div>
                                     </td>
                                     <td class="px-4 py-3 text-center align-top pt-4">
@@ -91,7 +109,8 @@
     </div>
 
     <script>
-        let itemIndex = {{ $replaceTemplate->items->count() }};
+        // Dimulai dari jumlah item yang sudah ada
+        let itemIndex = {{ $replaceTemplate->items->count() }}; 
 
         document.addEventListener("DOMContentLoaded", function() {
             const container = document.getElementById('items-container');
@@ -100,6 +119,44 @@
                 onEnd: function () { reindexItems(); }
             });
         });
+
+        // FUNGSI PREVIEW (Sama seperti Create)
+        function previewItemImage(input, type) {
+            const row = input.closest('.item-row');
+            const previewContainer = row.querySelector('.item-preview-container');
+            const previewImg = row.querySelector('.item-preview-img');
+
+            if (type === 'file') {
+                if (input.files && input.files[0]) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) { previewImg.src = e.target.result; previewContainer.classList.remove('hidden'); }
+                    reader.readAsDataURL(input.files[0]);
+                } else { previewContainer.classList.add('hidden'); }
+            } else if (type === 'url') {
+                const url = input.value;
+                if (url) {
+                    previewImg.src = url; previewContainer.classList.remove('hidden');
+                    previewImg.onerror = function() { previewContainer.classList.add('hidden'); };
+                } else { previewContainer.classList.add('hidden'); }
+            }
+        }
+
+        function toggleImageType(selectElement, index) {
+            const row = selectElement.closest('.item-row');
+            const fileInput = row.querySelector('.image-input-file');
+            const urlInput = row.querySelector('.image-input-url');
+            const previewContainer = row.querySelector('.item-preview-container');
+            
+            if(previewContainer) previewContainer.classList.add('hidden');
+
+            if (selectElement.value === 'file') {
+                fileInput.classList.remove('hidden'); urlInput.classList.add('hidden'); urlInput.value = ''; 
+            } else if (selectElement.value === 'url') {
+                urlInput.classList.remove('hidden'); fileInput.classList.add('hidden'); fileInput.value = ''; 
+            } else {
+                fileInput.classList.add('hidden'); urlInput.classList.add('hidden'); fileInput.value = ''; urlInput.value = '';
+            }
+        }
 
         function addItem() {
             const container = document.getElementById('items-container');
@@ -111,15 +168,23 @@
                     <td class="px-4 py-3 align-top">
                         <input type="text" name="items[${itemIndex}][replace_text]" class="w-full form-control rounded-lg border-zinc-300 text-sm py-2 px-3 focus:ring-zinc-900 focus:border-zinc-900" placeholder="Ex: Basic" required>
                     </td>
-                    <td class="px-4 py-3 align-top min-w-[250px]">
+                    <td class="px-4 py-3 align-top min-w-[300px]">
                         <div class="flex flex-col gap-2 w-full">
                             <select name="items[${itemIndex}][image_type]" class="w-full form-select rounded-lg border-zinc-300 text-sm image-type-select py-2 px-3 bg-zinc-50 focus:ring-zinc-900 focus:border-zinc-900" onchange="toggleImageType(this, ${itemIndex})">
                                 <option value="none" selected>Kosong / Default 📷</option>
                                 <option value="file">Upload File dari Komputer</option>
                                 <option value="url">Pakai Link URL</option>
                             </select>
-                            <input type="file" name="items[${itemIndex}][image_file]" class="w-full form-control text-sm image-input-file hidden" accept="image/*">
-                            <input type="url" name="items[${itemIndex}][image_url]" class="w-full form-control rounded-lg border-zinc-300 text-sm image-input-url hidden py-2 px-3 focus:ring-zinc-900 focus:border-zinc-900" placeholder="https://...">
+                            <input type="file" name="items[${itemIndex}][image_file]" class="w-full form-control text-sm image-input-file hidden" accept="image/*" onchange="previewItemImage(this, 'file')">
+                            <input type="url" name="items[${itemIndex}][image_url]" class="w-full form-control rounded-lg border-zinc-300 text-sm image-input-url hidden py-2 px-3 focus:ring-zinc-900 focus:border-zinc-900" placeholder="https://..." oninput="previewItemImage(this, 'url')">
+                            
+                            <div class="item-preview-container hidden mt-1 flex items-center gap-2 bg-zinc-50 p-1.5 rounded-md border border-zinc-100">
+                                <img src="" class="item-preview-img h-12 w-20 object-cover rounded border border-zinc-200 shadow-sm bg-white">
+                                <div class="flex flex-col gap-0.5">
+                                    <span class="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full uppercase tracking-wider">Preview</span>
+                                    <span class="text-[9px] text-zinc-400 font-medium">Lokal / URL</span>
+                                </div>
+                            </div>
                         </div>
                     </td>
                     <td class="px-4 py-3 text-center align-top pt-4">
@@ -131,19 +196,6 @@
             container.insertAdjacentHTML('beforeend', html);
             itemIndex++;
             reindexItems();
-        }
-
-        function toggleImageType(selectElement, index) {
-            const row = selectElement.closest('.item-row');
-            const fileInput = row.querySelector('.image-input-file');
-            const urlInput = row.querySelector('.image-input-url');
-            if (selectElement.value === 'file') {
-                fileInput.classList.remove('hidden'); urlInput.classList.add('hidden'); urlInput.value = ''; 
-            } else if (selectElement.value === 'url') {
-                urlInput.classList.remove('hidden'); fileInput.classList.add('hidden'); fileInput.value = ''; 
-            } else {
-                fileInput.classList.add('hidden'); urlInput.classList.add('hidden'); fileInput.value = ''; urlInput.value = '';
-            }
         }
 
         function removeItem(button) {

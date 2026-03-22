@@ -35,7 +35,12 @@
 
                 <div class="space-y-1.5">
                     <label class="block text-sm font-bold text-zinc-700">Main Thumbnail</label>
-                    <input type="file" name="image" accept="image/*" class="block w-full px-4 py-2.5 rounded-xl border border-zinc-200 bg-zinc-50/50 text-sm">
+                    <input type="file" name="image" accept="image/*" class="block w-full px-4 py-2.5 rounded-xl border border-zinc-200 bg-zinc-50/50 text-sm" onchange="previewMainImage(this)">
+                    
+                    <div id="mainImagePreviewContainer" class="hidden mt-3">
+                        <p class="text-xs font-bold text-zinc-500 mb-1">Preview:</p>
+                        <img id="mainImagePreview" src="" class="h-32 w-auto object-cover rounded-xl border border-zinc-200 shadow-sm">
+                    </div>
                 </div>
 
                 <div class="space-y-1.5 md:col-span-2 border-b border-zinc-100 pb-6" x-data="{
@@ -123,42 +128,82 @@
                 handle: '.drag-handle', animation: 150, ghostClass: 'bg-zinc-100', 
                 onEnd: function () { reindexLinks(); }
             });
-            
-            // Tambahkan 1 baris kosong di awal load
-            addLink();
+            addLink(); // 1 baris kosong awal
         });
 
-        // Fitur Insert dari Template (JSON Loop)
+        // Preview Main Image
+        function previewMainImage(input) {
+            const previewContainer = document.getElementById('mainImagePreviewContainer');
+            const previewImage = document.getElementById('mainImagePreview');
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    previewImage.src = e.target.result;
+                    previewContainer.classList.remove('hidden');
+                }
+                reader.readAsDataURL(input.files[0]);
+            } else {
+                previewContainer.classList.add('hidden'); previewImage.src = '';
+            }
+        }
+
+        // Preview Variant Image
+        function previewVariantImage(input, type) {
+            const container = input.closest('td');
+            const previewContainer = container.querySelector('.variant-preview-container');
+            const previewImg = container.querySelector('.variant-preview-img');
+
+            if (type === 'file') {
+                if (input.files && input.files[0]) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) { previewImg.src = e.target.result; previewContainer.classList.remove('hidden'); }
+                    reader.readAsDataURL(input.files[0]);
+                } else { previewContainer.classList.add('hidden'); }
+            } else if (type === 'url') {
+                const url = input.value;
+                if (url) {
+                    previewImg.src = url; previewContainer.classList.remove('hidden');
+                    previewImg.onerror = function() { previewContainer.classList.add('hidden'); };
+                } else { previewContainer.classList.add('hidden'); }
+            }
+        }
+
+        function toggleImageType(selectElement, index) {
+            const row = selectElement.closest('.link-item');
+            const fileInput = row.querySelector('.image-input-file');
+            const urlInput = row.querySelector('.image-input-url');
+            const previewContainer = row.querySelector('.variant-preview-container');
+            
+            if(previewContainer) previewContainer.classList.add('hidden');
+
+            if (selectElement.value === 'file') {
+                fileInput.classList.remove('hidden'); urlInput.classList.add('hidden'); urlInput.value = ''; 
+            } else if (selectElement.value === 'url') {
+                urlInput.classList.remove('hidden'); fileInput.classList.add('hidden'); fileInput.value = ''; 
+            } else {
+                fileInput.classList.add('hidden'); urlInput.classList.add('hidden'); fileInput.value = ''; urlInput.value = '';
+            }
+        }
+
         function addFromTemplate() {
             const select = document.getElementById('replaceTemplateSelect');
             const option = select.options[select.selectedIndex];
-
-            if (!option.value) {
-                alert('Pilih template dari dropdown terlebih dahulu!');
-                return;
-            }
+            if (!option.value) { alert('Pilih template dari dropdown terlebih dahulu!'); return; }
 
             const itemsData = option.getAttribute('data-items');
             if (itemsData) {
                 const items = JSON.parse(itemsData);
-                if (items.length === 0) {
-                    alert('Template ini belum memiliki varian/item di dalamnya!');
-                    return;
-                }
+                if (items.length === 0) { alert('Template ini belum memiliki varian!'); return; }
 
-                // Cek jika baris pertama kosong belum diisi, kita bisa hapus agar rapi
                 const firstRowText = document.querySelector('input[name="links[0][replace_name]"]');
                 const firstRowUrl = document.querySelector('input[name="links[0][url]"]');
                 if (firstRowText && firstRowText.value === '' && firstRowUrl && firstRowUrl.value === '') {
-                    document.getElementById('links-container').innerHTML = '';
-                    linkIndex = 0;
+                    document.getElementById('links-container').innerHTML = ''; linkIndex = 0;
                 }
 
-                // Loop & masukkan semua varian dari JSON
                 items.forEach(item => {
                     let imageVal = item.image;
                     let finalType = 'none';
-
                     if ((item.image_type === 'file' || item.image_type === 'url') && imageVal) {
                         finalType = 'url';
                         if (item.image_type === 'file' && !imageVal.startsWith('http')) {
@@ -168,10 +213,9 @@
                     addLink(item.replace_text, finalType, imageVal);
                 });
             }
-            select.value = ''; // Reset dropdown
+            select.value = ''; 
         }
 
-        // Fungsi Tambah Baris (Menerima parameter opsional jika dipanggil dari Template)
         function addLink(defaultText = '', defaultImgType = 'none', defaultImgUrl = '') {
             const container = document.getElementById('links-container');
             const isUrl = defaultImgType === 'url';
@@ -182,10 +226,10 @@
                         <svg class="w-6 h-6 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
                     </td>
                     <td class="px-4 py-3 align-top">
-                        <input type="text" name="links[${linkIndex}][replace_name]" value="${defaultText}" class="w-full form-control rounded-lg border-zinc-300 text-sm py-2 px-3 focus:ring-zinc-900 focus:border-zinc-900" placeholder="Ex: Gusion Venom" required>
+                        <input type="text" name="links[${linkIndex}][replace_name]" value="${defaultText}" class="w-full form-control rounded-lg border-zinc-300 text-sm py-2 px-3 focus:ring-zinc-900" required>
                     </td>
                     <td class="px-4 py-3 align-top">
-                        <input type="url" name="links[${linkIndex}][url]" class="w-full form-control rounded-lg border-zinc-300 text-sm py-2 px-3 focus:ring-zinc-900 focus:border-zinc-900" placeholder="https://..." required>
+                        <input type="url" name="links[${linkIndex}][url]" class="w-full form-control rounded-lg border-zinc-300 text-sm py-2 px-3 focus:ring-zinc-900" required>
                     </td>
                     <td class="px-4 py-3 align-top min-w-[250px]">
                         <div class="flex flex-col gap-2 w-full">
@@ -194,8 +238,13 @@
                                 <option value="file">Upload File dari Komputer</option>
                                 <option value="url" ${defaultImgType === 'url' ? 'selected' : ''}>Pakai Link URL</option>
                             </select>
-                            <input type="file" name="links[${linkIndex}][image_file]" class="w-full form-control text-sm image-input-file hidden" accept="image/*">
-                            <input type="url" name="links[${linkIndex}][image_url]" value="${defaultImgUrl}" class="w-full form-control rounded-lg border-zinc-300 text-sm image-input-url ${isUrl ? '' : 'hidden'} py-2 px-3 focus:ring-zinc-900" placeholder="https://...">
+                            <input type="file" name="links[${linkIndex}][image_file]" class="w-full form-control text-sm image-input-file hidden" accept="image/*" onchange="previewVariantImage(this, 'file')">
+                            <input type="url" name="links[${linkIndex}][image_url]" value="${defaultImgUrl}" class="w-full form-control rounded-lg border-zinc-300 text-sm image-input-url ${isUrl ? '' : 'hidden'} py-2 px-3 focus:ring-zinc-900" placeholder="https://..." oninput="previewVariantImage(this, 'url')">
+                            
+                            <div class="variant-preview-container ${isUrl && defaultImgUrl ? '' : 'hidden'} mt-1 flex items-center gap-2">
+                                <img src="${isUrl ? defaultImgUrl : ''}" class="variant-preview-img h-10 w-16 object-cover rounded border border-zinc-200 shadow-sm">
+                                <span class="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded uppercase">Preview</span>
+                            </div>
                         </div>
                     </td>
                     <td class="px-4 py-3 text-center align-top pt-4">
@@ -208,19 +257,6 @@
             container.insertAdjacentHTML('beforeend', html);
             linkIndex++;
             reindexLinks();
-        }
-
-        function toggleImageType(selectElement, index) {
-            const row = selectElement.closest('.link-item');
-            const fileInput = row.querySelector('.image-input-file');
-            const urlInput = row.querySelector('.image-input-url');
-            if (selectElement.value === 'file') {
-                fileInput.classList.remove('hidden'); urlInput.classList.add('hidden'); urlInput.value = ''; 
-            } else if (selectElement.value === 'url') {
-                urlInput.classList.remove('hidden'); fileInput.classList.add('hidden'); fileInput.value = ''; 
-            } else {
-                fileInput.classList.add('hidden'); urlInput.classList.add('hidden'); fileInput.value = ''; urlInput.value = '';
-            }
         }
 
         function removeLink(button) {

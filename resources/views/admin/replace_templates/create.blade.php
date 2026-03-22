@@ -27,37 +27,13 @@
                         <thead class="bg-zinc-50 border-b border-zinc-200 text-xs uppercase text-zinc-500 font-bold">
                             <tr>
                                 <th class="px-4 py-3 w-12 text-center">⇅</th>
-                                <th class="px-4 py-3 w-[40%]">Replace Text</th>
-                                <th class="px-4 py-3 w-[45%]">Gambar Varian</th>
+                                <th class="px-4 py-3 w-[35%]">Replace Text</th>
+                                <th class="px-4 py-3 w-[50%]">Gambar Varian</th>
                                 <th class="px-4 py-3 w-[15%] text-center">Aksi</th>
                             </tr>
                         </thead>
                         <tbody id="items-container" class="divide-y divide-zinc-100">
-                            <tr class="item-row bg-white hover:bg-zinc-50 transition-colors">
-                                <td class="px-4 py-3 text-center align-top cursor-move drag-handle text-zinc-400 hover:text-zinc-900 pt-5">
-                                    <svg class="w-6 h-6 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
-                                </td>
-                                <td class="px-4 py-3 align-top">
-                                    <input type="text" name="items[0][replace_text]" class="w-full form-control rounded-lg border-zinc-300 text-sm py-2 px-3 focus:ring-zinc-900 focus:border-zinc-900" placeholder="Ex: Default" required>
-                                </td>
-                                <td class="px-4 py-3 align-top min-w-[250px]">
-                                    <div class="flex flex-col gap-2 w-full">
-                                        <select name="items[0][image_type]" class="w-full form-select rounded-lg border-zinc-300 text-sm image-type-select py-2 px-3 bg-zinc-50 focus:ring-zinc-900 focus:border-zinc-900" onchange="toggleImageType(this, 0)">
-                                            <option value="none" selected>Kosong / Default 📷</option>
-                                            <option value="file">Upload File dari Komputer</option>
-                                            <option value="url">Pakai Link URL</option>
-                                        </select>
-                                        <input type="file" name="items[0][image_file]" class="w-full form-control text-sm image-input-file hidden" accept="image/*">
-                                        <input type="url" name="items[0][image_url]" class="w-full form-control rounded-lg border-zinc-300 text-sm image-input-url hidden py-2 px-3 focus:ring-zinc-900 focus:border-zinc-900" placeholder="https://...">
-                                    </div>
-                                </td>
-                                <td class="px-4 py-3 text-center align-top pt-4">
-                                    <button type="button" onclick="removeItem(this)" class="p-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 hover:text-red-700 transition-colors mx-auto flex justify-center items-center" title="Hapus Baris">
-                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-                                    </button>
-                                </td>
-                            </tr>
-                        </tbody>
+                            </tbody>
                     </table>
                 </div>
                 
@@ -78,7 +54,7 @@
     </div>
 
     <script>
-        let itemIndex = 1;
+        let itemIndex = 0;
 
         document.addEventListener("DOMContentLoaded", function() {
             const container = document.getElementById('items-container');
@@ -88,27 +64,92 @@
                 ghostClass: 'bg-zinc-100', 
                 onEnd: function () { reindexItems(); }
             });
+            addItem(); // Tambah baris pertama otomatis
         });
+
+        // FUNGSI PREVIEW IMAGE (Realtime)
+        function previewItemImage(input, type) {
+            // Cari elemen row <tr> terdekat
+            const row = input.closest('.item-row');
+            // Cari container preview di dalam row tersebut
+            const previewContainer = row.querySelector('.item-preview-container');
+            const previewImg = row.querySelector('.item-preview-img');
+
+            if (type === 'file') {
+                if (input.files && input.files[0]) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        previewImg.src = e.target.result;
+                        previewContainer.classList.remove('hidden'); // Munculkan preview
+                    }
+                    reader.readAsDataURL(input.files[0]);
+                } else {
+                    previewContainer.classList.add('hidden'); // Sembunyikan jika batal
+                }
+            } else if (type === 'url') {
+                const url = input.value;
+                if (url) {
+                    previewImg.src = url;
+                    previewContainer.classList.remove('hidden'); // Munculkan preview
+                    // Handle jika URL gambar rusak/tidak valid
+                    previewImg.onerror = function() {
+                        previewContainer.classList.add('hidden');
+                    };
+                } else {
+                    previewContainer.classList.add('hidden'); // Sembunyikan jika kosong
+                }
+            }
+        }
+
+        // Modifikasi toggleImageType untuk mereset preview saat tipe diganti
+        function toggleImageType(selectElement, index) {
+            const row = selectElement.closest('.item-row');
+            const fileInput = row.querySelector('.image-input-file');
+            const urlInput = row.querySelector('.image-input-url');
+            const previewContainer = row.querySelector('.item-preview-container');
+            
+            // Sembunyikan preview setiap ganti tipe
+            if(previewContainer) previewContainer.classList.add('hidden');
+
+            if (selectElement.value === 'file') {
+                fileInput.classList.remove('hidden'); urlInput.classList.add('hidden'); urlInput.value = ''; 
+            } else if (selectElement.value === 'url') {
+                urlInput.classList.remove('hidden'); fileInput.classList.add('hidden'); fileInput.value = ''; 
+            } else {
+                fileInput.classList.add('hidden'); urlInput.classList.add('hidden'); fileInput.value = ''; urlInput.value = '';
+            }
+        }
 
         function addItem() {
             const container = document.getElementById('items-container');
+            // Menambahkan elemen preview di dalam HTML baris
             const html = `
                 <tr class="item-row bg-white hover:bg-zinc-50 transition-colors">
                     <td class="px-4 py-3 text-center align-top cursor-move drag-handle text-zinc-400 hover:text-zinc-900 pt-5">
                         <svg class="w-6 h-6 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
                     </td>
                     <td class="px-4 py-3 align-top">
-                        <input type="text" name="items[${itemIndex}][replace_text]" class="w-full form-control rounded-lg border-zinc-300 text-sm py-2 px-3 focus:ring-zinc-900 focus:border-zinc-900" placeholder="Ex: Basic" required>
+                        <input type="text" name="items[${itemIndex}][replace_text]" class="w-full form-control rounded-lg border-zinc-300 text-sm py-2 px-3 focus:ring-zinc-900 focus:border-zinc-900" placeholder="Ex: Default" required>
                     </td>
-                    <td class="px-4 py-3 align-top min-w-[250px]">
+                    <td class="px-4 py-3 align-top min-w-[300px]">
                         <div class="flex flex-col gap-2 w-full">
                             <select name="items[${itemIndex}][image_type]" class="w-full form-select rounded-lg border-zinc-300 text-sm image-type-select py-2 px-3 bg-zinc-50 focus:ring-zinc-900 focus:border-zinc-900" onchange="toggleImageType(this, ${itemIndex})">
                                 <option value="none" selected>Kosong / Default 📷</option>
                                 <option value="file">Upload File dari Komputer</option>
                                 <option value="url">Pakai Link URL</option>
                             </select>
-                            <input type="file" name="items[${itemIndex}][image_file]" class="w-full form-control text-sm image-input-file hidden" accept="image/*">
-                            <input type="url" name="items[${itemIndex}][image_url]" class="w-full form-control rounded-lg border-zinc-300 text-sm image-input-url hidden py-2 px-3 focus:ring-zinc-900 focus:border-zinc-900" placeholder="https://...">
+                            
+                            <input type="file" name="items[${itemIndex}][image_file]" class="w-full form-control text-sm image-input-file hidden" accept="image/*" onchange="previewItemImage(this, 'file')">
+                            
+                            <input type="url" name="items[${itemIndex}][image_url]" class="w-full form-control rounded-lg border-zinc-300 text-sm image-input-url hidden py-2 px-3 focus:ring-zinc-900 focus:border-zinc-900" placeholder="https://..." oninput="previewItemImage(this, 'url')">
+                            
+                            <div class="item-preview-container hidden mt-1 flex items-center gap-2 bg-zinc-50 p-1.5 rounded-md border border-zinc-100">
+                                <img src="" class="item-preview-img h-12 w-20 object-cover rounded border border-zinc-200 shadow-sm bg-white">
+                                <div class="flex flex-col gap-0.5">
+                                    <span class="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full uppercase tracking-wider">Preview</span>
+                                    <span class="text-[9px] text-zinc-400 font-medium">Lokal / URL</span>
+                                </div>
+                            </div>
                         </div>
                     </td>
                     <td class="px-4 py-3 text-center align-top pt-4">
@@ -121,27 +162,6 @@
             container.insertAdjacentHTML('beforeend', html);
             itemIndex++;
             reindexItems();
-        }
-
-        function toggleImageType(selectElement, index) {
-            const row = selectElement.closest('.item-row');
-            const fileInput = row.querySelector('.image-input-file');
-            const urlInput = row.querySelector('.image-input-url');
-
-            if (selectElement.value === 'file') {
-                fileInput.classList.remove('hidden');
-                urlInput.classList.add('hidden');
-                urlInput.value = ''; 
-            } else if (selectElement.value === 'url') {
-                urlInput.classList.remove('hidden');
-                fileInput.classList.add('hidden');
-                fileInput.value = ''; 
-            } else {
-                fileInput.classList.add('hidden');
-                urlInput.classList.add('hidden');
-                fileInput.value = '';
-                urlInput.value = '';
-            }
         }
 
         function removeItem(button) {
