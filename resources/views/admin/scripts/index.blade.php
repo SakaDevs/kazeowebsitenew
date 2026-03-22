@@ -57,7 +57,9 @@
                                     </div>
                                 @endif
                                 <div>
-                                    <p class="font-bold text-zinc-900 line-clamp-1">{{ $script->title }}</p>
+                                    <a href="{{ route('script.show', $script->slug) }}" target="_blank" class="font-bold text-zinc-900 hover:text-blue-600 hover:underline transition-colors line-clamp-1 block">
+                                        {{ $script->title }}
+                                    </a>
                                     <p class="text-xs text-zinc-500 font-medium mt-0.5">Last Updated {{ $script->updated_at->format('d M Y') }}</p>
                                     <p class="text-xs text-zinc-500 font-medium mt-0.5">{{ $script->created_at->format('d M Y') }}</p>
                                 </div>

@@ -218,7 +218,10 @@ class ScriptController extends Controller
         }
         
         // Hapus gambar varian JIKA bentuknya masih file lokal
-        foreach ($script->links as $link) {
+        // 🔴 FIX: Tambahkan ->get() agar tidak error jika datanya kosong
+        $links = $script->links()->get(); 
+        
+        foreach ($links as $link) {
             if ($link->image && !Str::startsWith($link->image, ['http://', 'https://'])) {
                 if (Storage::disk('public')->exists($link->image)) {
                     Storage::disk('public')->delete($link->image);
