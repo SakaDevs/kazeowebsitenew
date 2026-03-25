@@ -213,7 +213,6 @@
                     </div>
                 @empty
                     <div class="text-center py-16 bg-white rounded-2xl border border-zinc-200 shadow-sm">
-                        <span class="text-5xl mb-4 block">👻</span>
                         <h3 class="text-lg font-bold text-zinc-900 mb-1">Masih Sepi Nih!</h3>
                         <p class="text-zinc-500 font-medium text-sm mb-4">Belum ada postingan di komunitas. Jadilah yang pertama!</p>
                         <a href="{{ route('community.create') }}" class="inline-flex justify-center items-center px-6 py-2.5 bg-zinc-900 text-white text-sm font-bold rounded-xl hover:bg-zinc-800 transition-colors shadow-sm">

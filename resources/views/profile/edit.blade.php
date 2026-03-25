@@ -12,7 +12,7 @@
     <main class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 mb-16 space-y-8">
         
         <div>
-            <a href="{{ route('dashboard') }}" class="inline-flex items-center gap-2 text-sm font-bold text-zinc-500 hover:text-zinc-900 transition-colors mb-4">
+            <a href="{{ url('/dashboard')  }}" class="inline-flex items-center gap-2 text-sm font-bold text-zinc-500 hover:text-zinc-900 transition-colors mb-4">
                 <span>&larr;</span> Kembali ke Dashboard
             </a>
             <h1 class="text-2xl sm:text-3xl font-black text-zinc-900 tracking-tight flex items-center gap-2">

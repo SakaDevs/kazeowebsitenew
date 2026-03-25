@@ -187,12 +187,12 @@
                                             <td class="px-4 md:px-6 py-4 md:py-5 align-middle text-center">
                                                 @if($link->image)
                                                     @if(Str::startsWith($link->image, ['http://', 'https://']))
-                                                        <img src="{{ $link->image }}" alt="{{ $link->replace_name }}" referrerpolicy="no-referrer" class="w-10 h-10 md:w-11 md:h-11 rounded-full object-cover mx-auto shadow-sm transition-transform hover:scale-110 cursor-pointer">
+                                                        <img src="{{ $link->image }}" alt="{{ $link->replace_name }}" referrerpolicy="no-referrer" class="w-10 h-10 md:w-11 md:h-11 min-w-[40px] min-h-[40px] md:min-w-[44px] md:min-h-[44px] aspect-square rounded-full object-cover mx-auto shadow-sm transition-transform hover:scale-110 cursor-pointer">
                                                     @else
-                                                        <img src="{{ Storage::url($link->image) }}" alt="{{ $link->replace_name }}" class="w-10 h-10 md:w-11 md:h-11 rounded-full object-cover mx-auto shadow-sm transition-transform hover:scale-110 cursor-pointer">
+                                                        <img src="{{ Storage::url($link->image) }}" alt="{{ $link->replace_name }}" class="w-10 h-10 md:w-11 md:h-11 min-w-[40px] min-h-[40px] md:min-w-[44px] md:min-h-[44px] aspect-square rounded-full object-cover mx-auto shadow-sm transition-transform hover:scale-110 cursor-pointer">
                                                     @endif
                                                 @else
-                                                    <div class="w-10 h-10 md:w-11 md:h-11 rounded-full bg-zinc-100 mx-auto flex items-center justify-center border border-zinc-200 text-zinc-400 text-xs shadow-sm">
+                                                    <div class="w-10 h-10 md:w-11 md:h-11 min-w-[40px] min-h-[40px] md:min-w-[44px] md:min-h-[44px] aspect-square rounded-full bg-zinc-100 mx-auto flex items-center justify-center border border-zinc-200 text-zinc-400 text-xs shadow-sm">
                                                         <span>📷</span>
                                                     </div>
                                                 @endif
@@ -222,7 +222,7 @@
 
                 <div class="mt-16 pt-10 border-t border-zinc-200">
                     <h2 class="text-xl font-bold text-zinc-900 mb-6 tracking-tight flex items-center gap-2">
-                        💬 Komentar ({{ $script->comments->count() }})
+                        Komentar ({{ $script->comments->count() }})
                     </h2>
 
                     @if(session('success'))

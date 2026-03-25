@@ -14,7 +14,7 @@
         
         <div class="text-center max-w-2xl mx-auto mb-16">
             <h1 class="text-3xl sm:text-4xl font-black text-zinc-900 tracking-tight flex items-center justify-center gap-3 mb-4">
-                <span class="text-4xl">🌐</span> Connect with Kazeo
+                <span class="text-4xl"></span> Connect with Kazeo
             </h1>
             <p class="text-zinc-500 text-lg font-medium leading-relaxed">
                 Jangan sampai ketinggalan update terbaru. Bergabunglah dengan komunitas kami di berbagai platform favoritmu!
@@ -38,7 +38,7 @@
                     <p class="text-zinc-500 font-medium mb-8 leading-relaxed">
                         Rumah utama kami. Temukan tutorial, showcase script terbaru, dan konten eksklusif Kazeo Official.
                     </p>
-                    <a href="https://www.youtube.com/@KazeoOfficialRealz" target="_blank" class="mt-auto inline-flex justify-center items-center w-full px-6 py-4 bg-zinc-900 text-white font-bold rounded-xl group-hover:bg-red-600 transition-colors shadow-md active:scale-95">
+                    <a href="https://www.youtube.com/@KazeoOfficialNew20" target="_blank" class="mt-auto inline-flex justify-center items-center w-full px-6 py-4 bg-zinc-900 text-white font-bold rounded-xl group-hover:bg-red-600 transition-colors shadow-md active:scale-95">
                         Subscribe Now &rarr;
                     </a>
                 </div>
