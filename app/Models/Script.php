@@ -2,28 +2,38 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Script extends Model
 {
-    protected $guarded =['id'];
+    use HasFactory;
+
+    // Hapus $guarded, kita gunakan $fillable saja agar lebih aman dan jelas
     protected $fillable = [
-        'category_id', 'title', 'slug', 'image', 'short_story', 
-        'links', 'views', 'published_at', 'user_id'
+        'category_id', 
+        'user_id',
+        'title', 
+        'slug', 
+        'image', 
+        'short_story', 
+        'views', 
+        'status', 
+        'published_at'
     ];
 
-    // Karena links berbentuk object/JSON, kita beri tahu Laravel untuk otomatis mengubahnya jadi Array/Object saat dipanggil
+    // 🔴 FIX: Beritahu Laravel bahwa published_at adalah waktu (datetime)
     protected $casts = [
-        'links' => 'array', 
-        'published_at' => 'datetime',
+        'published_at' => 'datetime', 
     ];
+
+    // --- RELASI DATABASE ---
 
     public function category()
     {
         return $this->belongsTo(Category::class);
     }
 
-    // Polymorphic relasi ke komentar
     public function comments()
     {
         return $this->hasMany(ScriptComment::class);
@@ -33,6 +43,7 @@ class Script extends Model
     {
         return $this->hasMany(ScriptLink::class);
     }
+
     public function user()
     {
         return $this->belongsTo(User::class);

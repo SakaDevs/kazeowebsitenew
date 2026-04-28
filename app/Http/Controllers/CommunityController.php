@@ -7,118 +7,100 @@ use Illuminate\Http\Request;
 
 class CommunityController extends Controller
 {
-    // Menampilkan semua postingan di halaman komunitas
+    // 1. Menampilkan Halaman Utama Komunitas
     public function index(Request $request)
     {
-        // 1. Siapkan kerangka query
-        $query = Community::with(['user', 'comments.user', 'reactions'])
-            ->orderByDesc('is_pinned')
-            ->latest();
+        $query = Community::with(['user'])->latest();
 
-        // 2. Lakukan Filter jika diklik
-        if ($request->has('category') && $request->category !== 'Terbaru') {
-            $query->where('category', $request->category);
+        if ($request->has('search') && $request->search != '') {
+            $query->where('title', 'like', '%' . $request->search . '%')
+                  ->orWhere('content', 'like', '%' . $request->search . '%');
         }
 
-        // 3. Eksekusi! (Pastikan tidak ada kode $posts = ... lagi selain baris ini)
-        $posts = $query->get();
-            
+        // 🔴 UBAH NAMANYA JADI $posts DI SINI
+        $posts = $query->paginate(15);
+
+        // 🔴 UBAH JUGA DI SINI JADI 'posts'
         return view('community', compact('posts'));
     }
 
-    // Menampilkan halaman form buat postingan baru
+    // 2. Menampilkan Form Create Postingan
     public function create()
     {
-        return view('community-create');
+        // 🔴 FIX: Sesuaikan dengan nama filemu 'community-create.blade.php'
+        return view('community-create'); 
     }
 
-    // Menyimpan postingan baru ke database
+    // 3. Menyimpan Data ke Database
     public function store(Request $request)
-{
-    // 1. Validasi input dari form
-    $request->validate([
-        'title' => 'required|string|max:255',
-        'body' => 'required|string',
-        'category' => 'required|string',
-    ]);
-
-    // 2. Simpan ke database (Pastikan title dan body dipanggil di sini!)
-    Community::create([
-        'user_id' => auth()->id(),
-        'title' => $request->title,
-        'body' => $request->body,
-        'category' => $request->category,
-        'is_pinned' => false, // Default tidak di-pin
-    ]);
-
-    return redirect()->route('community.index')->with('success', 'Postingan berhasil dibuat!');
-}
-
-    // Fungsi Like / Unlike
-    public function toggleLike(Community $community)
     {
-        $existingLike = $community->reactions()->where('user_id', auth()->id())->first();
+        $request->validate([
+            'title' => 'required|string|max:255',
+            'category' => 'required|string|max:100',
+            'content' => 'required|string',
+        ]);
 
-        if ($existingLike) {
-            $existingLike->delete(); // Jika sudah like, maka di-unlike
-        } else {
-            // JALAN PINTAS: Bikin objek reaksi manual agar is_like terisi
-            $reaction = new \App\Models\Reaction(); 
-            $reaction->user_id = auth()->id();
-            $reaction->is_like = true; // Kita isi true (1) karena ini tombol Like (❤️)
+        Community::create([
+            'user_id' => auth()->id(),
+            'title' => $request->title,
+            'category' => $request->category,
+            'content' => $request->content,
+        ]);
 
-            // Simpan reaksi ke postingan ini
-            $community->reactions()->save($reaction);
+        return redirect()->route('community.index')->with('success', 'Postingan komunitasmu berhasil diterbitkan! 🚀');
+    }
+
+    // 4. Fitur Hapus Postingan
+    public function destroy(Community $community)
+    {
+        if (auth()->id() === $community->user_id || in_array(auth()->user()->role, ['admin', 'super_admin'])) {
+            $community->delete();
+            return redirect()->route('community.index')->with('success', 'Postingan berhasil dihapus!');
         }
 
+        return abort(403, 'Anda tidak memiliki akses untuk menghapus postingan ini.');
+    }
+
+    // --- FITUR TAMBAHAN ---
+
+    public function toggleLike(Community $community)
+    {
+        // Cek apakah user sudah pernah like postingan ini
+        $existingReaction = $community->reactions()->where('user_id', auth()->id())->first();
+
+        if ($existingReaction) {
+            // Jika sudah ada, berarti user ingin UNLIKE (Hapus data)
+            $existingReaction->delete();
+        } else {
+            // Jika belum ada, berarti user ingin LIKE (Buat data)
+            $community->reactions()->create([
+                'user_id' => auth()->id()
+            ]);
+        }
+        
         return back();
     }
 
-    // Fungsi Kirim Komentar
+    // 2. Fitur Komentar Komunitas (FIX BUG 'BODY')
     public function storeComment(Request $request, Community $community)
     {
-        $request->validate(['content' => 'required|string|max:500']);
-
-        // JALAN PINTAS: Bikin objek komentar baru secara manual biar gak diblokir!
-        $comment = new \App\Models\Comment(); 
-        $comment->user_id = auth()->id();
-        $comment->body = $request->content;
-
-        // Simpan komentar yang sudah diisi penuh ke postingan ini
-        $community->comments()->save($comment);
-
-        return back()->with('success', 'Komentar terkirim!');
-    }
-    // Fungsi khusus Admin untuk Pin / Unpin postingan
-    public function togglePin(Community $community)
-    {
-        // Pagar keamanan: Pastikan pakai ->role (bukan ->usertype) dan pakai trim()
-        $userRole = trim(auth()->user()->role ?? '');
-        
-        if (!in_array($userRole, ['admin', 'super_admin', 'superadmin'])) {
-            abort(403, 'AKSES DITOLAK! HANYA ADMIN YANG BISA MELAKUKAN PIN.');
-        }
-
-        // Ubah status
-        $community->update([
-            'is_pinned' => !$community->is_pinned
+        $request->validate([
+            'content' => 'required|string',
         ]);
 
-        $status = $community->is_pinned ? 'disematkan ke atas' : 'dilepas dari sematan';
-        return back()->with('success', "Postingan berhasil {$status}!");
+        $community->comments()->create([
+            'user_id' => auth()->id(),
+            'body' => $request->content, // 🔴 INI KUNCINYA: Ubah 'content' jadi 'body'
+        ]);
+
+        return back()->with('success', 'Komentar berhasil ditambahkan!');
     }
-    public function destroy(Community $community)
+    public function togglePin(Community $community)
     {
-        $userRole = trim(auth()->user()->role ?? '');
-        
-        // Cek Keamanan: Pastikan hanya admin yang bisa mengeksekusi
-        if (!in_array($userRole, ['admin', 'super_admin', 'superadmin'])) {
-            abort(403, 'AKSES DITOLAK! HANYA ADMIN YANG BISA MENGHAPUS POSTINGAN.');
+        if (in_array(auth()->user()->role, ['admin', 'super_admin'])) {
+            $community->update(['is_pinned' => !$community->is_pinned]);
         }
-
-        // Hapus postingan beserta seluruh reaksi & komentar yang terhubung ke postingan ini
-        $community->delete();
-
-        return back()->with('success', 'Postingan berhasil dihapus secara permanen!');
+        
+        return back();
     }
 }

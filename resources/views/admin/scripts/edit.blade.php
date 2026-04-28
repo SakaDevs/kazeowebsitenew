@@ -19,6 +19,18 @@
             @csrf
             @method('PUT')
 
+            @if ($errors->any())
+                <div class="mb-6 p-4 rounded-xl bg-red-50 border border-red-200">
+                    <div class="flex items-center gap-2 text-red-800 font-bold mb-2">
+                        <span>⚠️</span> Oops! Ada isian yang belum sesuai:
+                    </div>
+                    <ul class="list-disc pl-5 text-sm text-red-700 space-y-1 font-medium">
+                        @foreach ($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endif
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 pb-6 border-b border-zinc-100">
                 <div class="space-y-1.5 md:col-span-2">
                     <label class="block text-sm font-bold text-zinc-700">Script Title</label>
@@ -29,7 +41,7 @@
                     <label class="block text-sm font-bold text-zinc-700">Category</label>
                     <select name="category_id" required class="block w-full px-4 py-3 rounded-xl border border-zinc-200 bg-zinc-50/50 text-zinc-900 focus:bg-white focus:border-zinc-900 focus:ring-2 focus:ring-zinc-900/20 transition-all cursor-pointer">
                         @foreach($categories as $category)
-                            <option value="{{ $category->id }}" {{ $script->category_id == $category->id ? 'selected' : '' }}>
+                            <option value="{{ $category->id }}" {{ (old('category_id', $script->category_id) == $category->id) ? 'selected' : '' }}>
                                 {{ $category->name }}
                             </option>
                         @endforeach
@@ -40,7 +52,7 @@
                     <label class="block text-sm font-bold text-zinc-700">Main Thumbnail (Biarkan kosong jika tidak diganti)</label>
                     @if($script->image)
                         <div class="mb-2">
-                            <img src="{{ Storage::url($script->image) }}" class="h-16 w-24 object-cover rounded-lg border border-zinc-200">
+                            <img src="{{ Storage::url($script->image) }}" class="h-16 w-24 object-cover rounded-lg border border-zinc-200 shadow-sm">
                         </div>
                     @endif
                     <input type="file" name="image" accept="image/*" class="block w-full px-4 py-2.5 rounded-xl border border-zinc-200 bg-zinc-50/50 text-sm" onchange="previewMainImage(this)">
@@ -48,6 +60,47 @@
                     <div id="mainImagePreviewContainer" class="hidden mt-3">
                         <p class="text-xs font-bold text-zinc-500 mb-1">Preview Baru:</p>
                         <img id="mainImagePreview" src="" class="h-32 w-auto object-cover rounded-xl border border-zinc-200 shadow-sm">
+                    </div>
+                </div>
+
+                @php
+                    // Logika cerdas form edit: Baca status dari DB, jika jadwal kelewat, anggap published
+                    $dbStatus = $script->status;
+                    if ($dbStatus === 'scheduled' && $script->published_at && $script->published_at <= now()) {
+                        $dbStatus = 'published';
+                    }
+                @endphp
+                
+                <div class="space-y-3 md:col-span-2 p-5 rounded-xl border border-zinc-200 bg-zinc-50 shadow-sm" 
+                     x-data="{ publishMode: '{{ old('status', $dbStatus) }}' }">
+                    
+                    <label class="block text-sm font-bold text-zinc-700">Status Publikasi</label>
+                    
+                    <div class="flex flex-col sm:flex-row gap-4">
+                        <label class="flex items-center gap-2 p-3 border border-zinc-200 rounded-lg cursor-pointer bg-white transition-all" :class="publishMode === 'published' ? 'border-emerald-500 ring-2 ring-emerald-500/20 bg-emerald-50' : 'hover:bg-zinc-100'">
+                            <input type="radio" name="status" value="published" x-model="publishMode" class="text-emerald-600 focus:ring-emerald-500 w-4 h-4">
+                            <span class="text-sm font-bold" :class="publishMode === 'published' ? 'text-emerald-700' : 'text-zinc-700'">Langsung Publish</span>
+                        </label>
+
+                        <label class="flex items-center gap-2 p-3 border border-zinc-200 rounded-lg cursor-pointer bg-white transition-all" :class="publishMode === 'draft' ? 'border-amber-500 ring-2 ring-amber-500/20 bg-amber-50' : 'hover:bg-zinc-100'">
+                            <input type="radio" name="status" value="draft" x-model="publishMode" class="text-amber-600 focus:ring-amber-500 w-4 h-4">
+                            <span class="text-sm font-bold" :class="publishMode === 'draft' ? 'text-amber-700' : 'text-zinc-700'">Simpan Draft</span>
+                        </label>
+
+                        <label class="flex items-center gap-2 p-3 border border-zinc-200 rounded-lg cursor-pointer bg-white transition-all" :class="publishMode === 'scheduled' ? 'border-blue-500 ring-2 ring-blue-500/20 bg-blue-50' : 'hover:bg-zinc-100'">
+                            <input type="radio" name="status" value="scheduled" x-model="publishMode" class="text-blue-600 focus:ring-blue-500 w-4 h-4">
+                            <span class="text-sm font-bold" :class="publishMode === 'scheduled' ? 'text-blue-700' : 'text-zinc-700'">Jadwalkan Waktu</span>
+                        </label>
+                    </div>
+
+                    <div x-show="publishMode === 'scheduled'" x-collapse class="pt-4 border-t border-zinc-200/60 mt-3">
+                        <label class="block text-sm font-bold text-zinc-700 mb-2">Pilih Tanggal & Jam Tayang</label>
+                        <input type="datetime-local" name="published_at" 
+                               value="{{ old('published_at', $script->published_at ? $script->published_at->format('Y-m-d\TH:i') : '') }}" 
+                               class="block w-full sm:w-1/2 px-4 py-2.5 rounded-xl border border-zinc-200 bg-white text-zinc-900 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all">
+                        <p class="text-xs font-medium text-zinc-500 mt-2 flex items-center gap-1">
+                            <span>ℹ️</span> Script otomatis tayang di web setelah jam ini terlewati.
+                        </p>
                     </div>
                 </div>
 
@@ -120,10 +173,10 @@
                                     </td>
                                     
                                     <td class="px-4 py-3 align-top">
-                                        <input type="text" name="links[{{ $index }}][replace_name]" value="{{ $link->replace_name }}" class="w-full form-control rounded-lg border-zinc-300 text-sm py-2 px-3 focus:ring-zinc-900 focus:border-zinc-900" required>
+                                        <input type="text" name="links[{{ $index }}][replace_name]" value="{{ old('links.'.$index.'.replace_name', $link->replace_name) }}" class="w-full form-control rounded-lg border-zinc-300 text-sm py-2 px-3 focus:ring-zinc-900 focus:border-zinc-900" required>
                                     </td>
                                     <td class="px-4 py-3 align-top">
-                                        <input type="url" name="links[{{ $index }}][url]" value="{{ $link->url }}" class="w-full form-control rounded-lg border-zinc-300 text-sm py-2 px-3 focus:ring-zinc-900 focus:border-zinc-900" required>
+                                        <input type="url" name="links[{{ $index }}][url]" value="{{ old('links.'.$index.'.url', $link->url) }}" class="w-full form-control rounded-lg border-zinc-300 text-sm py-2 px-3 focus:ring-zinc-900 focus:border-zinc-900" required>
                                     </td>
                                     <td class="px-4 py-3 align-top min-w-[250px]">
                                         <div class="flex flex-col gap-2 w-full">
@@ -180,7 +233,7 @@
     </div>
 
     <script>
-        // 🔴 FIX BUG VARIAN: Paksa panggil dari fungsi relasi
+        // Meneruskan index agar baris baru yang ditambah tidak bentrok dengan ID baris lama
         let linkIndex = {{ $script->links()->count() }}; 
 
         document.addEventListener("DOMContentLoaded", function() {
@@ -189,6 +242,11 @@
                 handle: '.drag-handle', animation: 150, ghostClass: 'bg-zinc-100', 
                 onEnd: function () { reindexLinks(); }
             });
+            
+            // Jika diedit tapi links-nya terhapus semua, munculkan 1 baris kosong
+            if(linkIndex === 0) {
+                addLink();
+            }
         });
 
         function previewMainImage(input) {
@@ -247,6 +305,12 @@
             if (itemsData) {
                 const items = JSON.parse(itemsData);
                 if (items.length === 0) { alert('Template ini belum memiliki varian/item di dalamnya!'); return; }
+                
+                // 🔴 FIX BUG: Kosongkan isi tabel sepenuhnya sebelum template masuk
+                const tbody = document.getElementById('links-container');
+                tbody.innerHTML = ''; 
+                linkIndex = 0; // Reset index
+                
                 items.forEach(item => {
                     let imageVal = item.image;
                     let finalType = 'none';

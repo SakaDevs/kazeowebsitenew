@@ -35,80 +35,117 @@
         </div>
         
         <div id="table-container">
-        <div class="overflow-x-auto">
-            <table class="w-full text-left border-collapse">
-                <thead>
-                    <tr class="bg-zinc-50/50 text-xs uppercase tracking-wider text-zinc-500 border-b border-zinc-200">
-                        <th class="px-6 py-4 font-bold">Script Info</th>
-                        <th class="px-6 py-4 font-bold">Category</th>
-                        <th class="px-6 py-4 font-bold">Uploader</th>
-                        <th class="px-6 py-4 font-bold text-right">Actions</th>
-                    </tr>
-                </thead>
-                <tbody class="divide-y divide-zinc-100">
-                    @forelse($scripts as $script)
-                        <tr class="hover:bg-zinc-50 transition-colors duration-200">
-                            <td class="px-6 py-4 flex items-center gap-4">
-                                @if($script->image)
-                                    <img src="{{ Storage::url($script->image) }}" alt="Thumbnail" class="w-16 h-12 object-cover rounded-lg shadow-sm border border-zinc-200">
-                                @else
-                                    <div class="w-16 h-12 bg-zinc-100 rounded-lg border border-zinc-200 flex items-center justify-center text-xl shadow-sm">
-                                        📦
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-zinc-50/50 text-xs uppercase tracking-wider text-zinc-500 border-b border-zinc-200">
+                            <th class="px-6 py-4 font-bold">Script Info</th>
+                            <th class="px-6 py-4 font-bold">Category</th>
+                            <th class="px-6 py-4 font-bold">Uploader</th>
+                            <th class="px-6 py-4 font-bold">Status</th>
+                            <th class="px-6 py-4 font-bold text-right">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-zinc-100">
+                        @forelse($scripts as $script)
+                            <tr class="hover:bg-zinc-50 transition-colors duration-200">
+                                <td class="px-6 py-4 flex items-center gap-4">
+                                    @if($script->image)
+                                        <img src="{{ Storage::url($script->image) }}" alt="Thumbnail" class="w-16 h-12 object-cover rounded-lg shadow-sm border border-zinc-200">
+                                    @else
+                                        <div class="w-16 h-12 bg-zinc-100 rounded-lg border border-zinc-200 flex items-center justify-center text-xl shadow-sm">
+                                            📦
+                                        </div>
+                                    @endif
+                                    <div>
+                                        <a href="{{ route('script.show', $script->slug) }}" target="_blank" class="font-bold text-zinc-900 hover:text-blue-600 hover:underline transition-colors line-clamp-1 block">
+                                            {{ $script->title }}
+                                        </a>
+                                        <p class="text-xs text-zinc-500 font-medium mt-0.5">Last Updated {{ $script->updated_at->format('d M Y') }}</p>
+                                        <p class="text-xs text-zinc-500 font-medium mt-0.5">{{ $script->created_at->format('d M Y') }}</p>
                                     </div>
-                                @endif
-                                <div>
-                                    <a href="{{ route('script.show', $script->slug) }}" target="_blank" class="font-bold text-zinc-900 hover:text-blue-600 hover:underline transition-colors line-clamp-1 block">
-                                        {{ $script->title }}
-                                    </a>
-                                    <p class="text-xs text-zinc-500 font-medium mt-0.5">Last Updated {{ $script->updated_at->format('d M Y') }}</p>
-                                    <p class="text-xs text-zinc-500 font-medium mt-0.5">{{ $script->created_at->format('d M Y') }}</p>
-                                </div>
-                            </td>
-                            
-                            <td class="px-6 py-4">
-                                <span class="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-bold bg-zinc-100 text-zinc-700 border border-zinc-200">
-                                    {{ $script->category->name ?? 'No Category' }}
-                                </span>
-                            </td>
-
-                            <td class="px-6 py-4">
-                                <div class="flex items-center gap-2">
-                                    <p class="text-sm font-medium text-zinc-700">{{ $script->user->name ?? 'Unknown' }}</p>
-                                </div>
-                            </td>
-
-                            <td class="px-6 py-4 text-right space-x-2">
-                                <a href="{{ route('admin.scripts.edit', $script->id) }}" class="inline-flex items-center px-3 py-1.5 bg-white border border-zinc-200 rounded-lg text-sm font-bold text-zinc-700 hover:bg-zinc-50 hover:text-zinc-900 transition-colors shadow-sm">
-                                    Edit
-                                </a>
+                                </td>
                                 
-                                <form action="{{ route('admin.scripts.destroy', $script->id) }}" method="POST" class="inline-block" onsubmit="return confirm('Yakin ingin menghapus script ini?');">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="inline-flex items-center px-3 py-1.5 bg-red-50 border border-red-100 rounded-lg text-sm font-bold text-red-600 hover:bg-red-100 hover:text-red-700 transition-colors shadow-sm">
-                                        Delete
-                                    </button>
-                                </form>
-                            </td>
-                        </tr>
-                    @empty
-                        <tr>
-                            <td colspan="4" class="px-6 py-12 text-center text-zinc-500 font-medium">
-                                Belum ada script yang di-upload.
-                            </td>
-                        </tr>
-                    @endforelse
-                </tbody>
-            </table>
-        </div>
-        
-        @if($scripts->hasPages())
-            <div class="p-4 border-t border-zinc-200 bg-zinc-50/50">
-                {{ $scripts->links() }}
+                                <td class="px-6 py-4">
+                                    <span class="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-bold bg-zinc-100 text-zinc-700 border border-zinc-200">
+                                        {{ $script->category->name ?? 'No Category' }}
+                                    </span>
+                                </td>
+
+                                <td class="px-6 py-4">
+                                    <div class="flex items-center gap-2">
+                                        <p class="text-sm font-medium text-zinc-700">{{ $script->user->name ?? 'Unknown' }}</p>
+                                    </div>
+                                </td>
+
+                                <td class="px-6 py-4">
+                                    @php
+                                        // Cek cerdas: Apakah ini script jadwal yang waktunya SUDAH LEWAT?
+                                        $isAutoPublished = $script->status === 'scheduled' && $script->published_at && $script->published_at <= now();
+                                    @endphp
+                                
+                                    @if($script->status === 'published' || $script->status === null || $isAutoPublished)
+                                        <div class="flex flex-col items-start gap-1">
+                                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 shadow-sm">
+                                                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Published
+                                            </span>
+                                            @if($isAutoPublished)
+                                                <span class="text-[9px] font-bold text-zinc-500 uppercase tracking-wider bg-zinc-100 px-1.5 py-0.5 rounded border border-zinc-200">
+                                                    Auto-Released
+                                                </span>
+                                            @endif
+                                        </div>
+                                    @elseif($script->status === 'draft')
+                                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-bold bg-amber-50 text-amber-700 border border-amber-200 shadow-sm">
+                                            <span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span> Draft
+                                        </span>
+                                    @elseif($script->status === 'scheduled')
+                                        <div class="flex flex-col items-start gap-1">
+                                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-bold bg-blue-50 text-blue-700 border border-blue-200 shadow-sm">
+                                                <span class="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse"></span> Scheduled
+                                            </span>
+                                            @if($script->published_at)
+                                                <span class="text-[10px] font-bold text-zinc-500 bg-zinc-100 px-1.5 py-0.5 rounded border border-zinc-200 mt-1">
+                                                    {{ $script->published_at->format('d M Y, H:i') }}
+                                                </span>
+                                            @endif
+                                        </div>
+                                    @endif
+                                </td>
+
+                                <td class="px-6 py-4 text-right space-x-2 whitespace-nowrap">
+                                    <a href="{{ route('admin.scripts.edit', $script->id) }}" class="inline-flex items-center px-3 py-1.5 bg-white border border-zinc-200 rounded-lg text-sm font-bold text-zinc-700 hover:bg-zinc-50 hover:text-zinc-900 transition-colors shadow-sm">
+                                        Edit
+                                    </a>
+                                    
+                                    <form action="{{ route('admin.scripts.destroy', $script->id) }}" method="POST" class="inline-block" onsubmit="return confirm('Yakin ingin menghapus script ini?');">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="inline-flex items-center px-3 py-1.5 bg-red-50 border border-red-100 rounded-lg text-sm font-bold text-red-600 hover:bg-red-100 hover:text-red-700 transition-colors shadow-sm">
+                                            Delete
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="5" class="px-6 py-12 text-center text-zinc-500 font-medium">
+                                    Belum ada script yang di-upload.
+                                </td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
             </div>
-        @endif
+            
+            @if($scripts->hasPages())
+                <div class="p-4 border-t border-zinc-200 bg-zinc-50/50">
+                    {{ $scripts->links() }}
+                </div>
+            @endif
         </div>
     </div>
+    
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             const searchInput = document.getElementById('searchInput');

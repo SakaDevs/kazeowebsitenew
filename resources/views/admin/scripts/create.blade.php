@@ -4,7 +4,7 @@
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 
-    <div class="mb-6">
+    <div class="mb-6 flex justify-between items-center">
         <a href="{{ route('admin.scripts.index') }}" class="inline-flex items-center gap-2 text-sm font-bold text-zinc-500 hover:text-zinc-900 transition-colors">
             <span>⬅️</span> Back to Scripts
         </a>
@@ -18,6 +18,18 @@
         <form action="{{ route('admin.scripts.store') }}" method="POST" enctype="multipart/form-data" class="p-6 space-y-6">
             @csrf
 
+            @if ($errors->any())
+                <div class="mb-6 p-4 rounded-xl bg-red-50 border border-red-200">
+                    <div class="flex items-center gap-2 text-red-800 font-bold mb-2">
+                        <span>⚠️</span> Oops! Ada isian yang belum sesuai:
+                    </div>
+                    <ul class="list-disc pl-5 text-sm text-red-700 space-y-1 font-medium">
+                        @foreach ($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endif
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 pb-6 border-b border-zinc-100">
                 <div class="space-y-1.5 md:col-span-2">
                     <label class="block text-sm font-bold text-zinc-700">Script Title</label>
@@ -27,8 +39,9 @@
                 <div class="space-y-1.5">
                     <label class="block text-sm font-bold text-zinc-700">Category</label>
                     <select name="category_id" required class="block w-full px-4 py-3 rounded-xl border border-zinc-200 bg-zinc-50/50 text-zinc-900 focus:bg-white focus:border-zinc-900 focus:ring-2 focus:ring-zinc-900/20 transition-all cursor-pointer">
+                        <option value="">-- Pilih Kategori --</option>
                         @foreach($categories as $category)
-                            <option value="{{ $category->id }}">{{ $category->name }}</option>
+                            <option value="{{ $category->id }}" {{ old('category_id') == $category->id ? 'selected' : '' }}>{{ $category->name }}</option>
                         @endforeach
                     </select>
                 </div>
@@ -43,19 +56,53 @@
                     </div>
                 </div>
 
-                <div class="space-y-1.5 md:col-span-2 border-b border-zinc-100 pb-6" x-data="{
-                    templates: {{ isset($templates) ? $templates->toJson() : '[]' }},
-                    selectedTemplate: '',
-                    descText: `{{ old('description') }}`,
-                    fillTemplate() {
-                        if(this.selectedTemplate !== '') {
-                            const tmpl = this.templates.find(t => t.id == this.selectedTemplate);
-                            if(tmpl) this.descText = tmpl.content; 
+                <div class="space-y-3 md:col-span-2 p-5 rounded-xl border border-zinc-200 bg-zinc-50 shadow-sm" 
+                     x-data="{ publishMode: '{{ old('status', 'published') }}' }">
+                    
+                    <label class="block text-sm font-bold text-zinc-700">Status Publikasi</label>
+                    
+                    <div class="flex flex-col sm:flex-row gap-4">
+                        <label class="flex items-center gap-2 p-3 border border-zinc-200 rounded-lg cursor-pointer bg-white transition-all" :class="publishMode === 'published' ? 'border-emerald-500 ring-2 ring-emerald-500/20 bg-emerald-50' : 'hover:bg-zinc-100'">
+                            <input type="radio" name="status" value="published" x-model="publishMode" class="text-emerald-600 focus:ring-emerald-500 w-4 h-4">
+                            <span class="text-sm font-bold" :class="publishMode === 'published' ? 'text-emerald-700' : 'text-zinc-700'">Langsung Publish</span>
+                        </label>
+
+                        <label class="flex items-center gap-2 p-3 border border-zinc-200 rounded-lg cursor-pointer bg-white transition-all" :class="publishMode === 'draft' ? 'border-amber-500 ring-2 ring-amber-500/20 bg-amber-50' : 'hover:bg-zinc-100'">
+                            <input type="radio" name="status" value="draft" x-model="publishMode" class="text-amber-600 focus:ring-amber-500 w-4 h-4">
+                            <span class="text-sm font-bold" :class="publishMode === 'draft' ? 'text-amber-700' : 'text-zinc-700'">Simpan Draft</span>
+                        </label>
+
+                        <label class="flex items-center gap-2 p-3 border border-zinc-200 rounded-lg cursor-pointer bg-white transition-all" :class="publishMode === 'scheduled' ? 'border-blue-500 ring-2 ring-blue-500/20 bg-blue-50' : 'hover:bg-zinc-100'">
+                            <input type="radio" name="status" value="scheduled" x-model="publishMode" class="text-blue-600 focus:ring-blue-500 w-4 h-4">
+                            <span class="text-sm font-bold" :class="publishMode === 'scheduled' ? 'text-blue-700' : 'text-zinc-700'">Jadwalkan Waktu</span>
+                        </label>
+                    </div>
+
+                    <div x-show="publishMode === 'scheduled'" x-collapse class="pt-4 border-t border-zinc-200/60 mt-3">
+                        <label class="block text-sm font-bold text-zinc-700 mb-2">Pilih Tanggal & Jam Tayang</label>
+                        <input type="datetime-local" name="published_at" value="{{ old('published_at') }}" class="block w-full sm:w-1/2 px-4 py-2.5 rounded-xl border border-zinc-200 bg-white text-zinc-900 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all">
+                        <p class="text-xs font-medium text-zinc-500 mt-2 flex items-center gap-1">
+                            <span>ℹ️</span> Script otomatis tayang di web setelah jam ini terlewati.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="space-y-1.5 md:col-span-2 border-b border-zinc-100 pb-6" 
+                    x-data="{
+                        templates: {{ isset($templates) ? $templates->toJson() : '[]' }},
+                        selectedTemplate: '',
+                        descText: '',
+                        fillTemplate() {
+                            if(this.selectedTemplate !== '') {
+                                const tmpl = this.templates.find(t => t.id == this.selectedTemplate);
+                                if(tmpl) this.descText = tmpl.content; 
+                            }
                         }
-                    }
-                }">
+                    }"
+                    x-init="descText = $refs.descInput.value"
+                >
                     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2">
-                        <label class="block text-sm font-bold text-zinc-700">Description</label>
+                        <label class="block text-sm font-bold text-zinc-700">Description / Short Story</label>
                         <select x-model="selectedTemplate" @change="fillTemplate()" class="text-sm border-zinc-200 rounded-lg bg-zinc-100 py-1.5 pl-3 pr-8 focus:ring-zinc-900 focus:border-zinc-900 font-medium text-zinc-700 cursor-pointer hover:bg-zinc-200 transition-colors shadow-sm">
                             <option value="">Gunakan Template Deskripsi...</option>
                             <template x-for="t in templates" :key="t.id">
@@ -63,7 +110,7 @@
                             </template>
                         </select>
                     </div>
-                    <textarea name="description" x-model="descText" rows="6" required placeholder="Ketik manual atau pilih template..." class="block w-full px-4 py-3.5 rounded-xl border border-zinc-200 bg-zinc-50/50 text-zinc-900 focus:bg-white focus:border-zinc-900 focus:ring-2 focus:ring-zinc-900/20 transition-all duration-300 resize-y"></textarea>
+                    <textarea x-ref="descInput" name="description" x-model="descText" rows="6" required placeholder="Ketik manual atau pilih template..." class="block w-full px-4 py-3.5 rounded-xl border border-zinc-200 bg-zinc-50/50 text-zinc-900 focus:bg-white focus:border-zinc-900 focus:ring-2 focus:ring-zinc-900/20 transition-all duration-300 resize-y">{{ old('description') }}</textarea>
                 </div>
             </div>
 
@@ -113,7 +160,7 @@
 
             <div class="pt-6 border-t border-zinc-200">
                 <button type="submit" class="w-full md:w-auto inline-flex justify-center items-center py-3.5 px-8 border border-transparent rounded-xl shadow-lg text-base font-bold text-white bg-zinc-900 hover:bg-zinc-800 transition-all duration-300 active:scale-95">
-                    Publish Script
+                    Simpan Script
                 </button>
             </div>
         </form>
@@ -128,7 +175,8 @@
                 handle: '.drag-handle', animation: 150, ghostClass: 'bg-zinc-100', 
                 onEnd: function () { reindexLinks(); }
             });
-            addLink(); // 1 baris kosong awal
+            // Memastikan minimal ada 1 baris kosong saat halaman pertama dimuat
+            addLink(); 
         });
 
         // Preview Main Image
@@ -195,17 +243,17 @@
                 const items = JSON.parse(itemsData);
                 if (items.length === 0) { alert('Template ini belum memiliki varian!'); return; }
 
-                const firstRowText = document.querySelector('input[name="links[0][replace_name]"]');
-                const firstRowUrl = document.querySelector('input[name="links[0][url]"]');
-                if (firstRowText && firstRowText.value === '' && firstRowUrl && firstRowUrl.value === '') {
-                    document.getElementById('links-container').innerHTML = ''; linkIndex = 0;
-                }
+                // 🔴 FIX BUG: Kosongkan isi tabel sepenuhnya sebelum template masuk
+                const tbody = document.getElementById('links-container');
+                tbody.innerHTML = ''; 
+                linkIndex = 0; // Reset index dari nol lagi
 
                 items.forEach(item => {
                     let imageVal = item.image;
                     let finalType = 'none';
                     if ((item.image_type === 'file' || item.image_type === 'url') && imageVal) {
                         finalType = 'url';
+                        // Jika tipe aslinya file (lokal), kita panggil via URL Storage
                         if (item.image_type === 'file' && !imageVal.startsWith('http')) {
                             imageVal = '{{ Storage::url("") }}' + imageVal; 
                         }

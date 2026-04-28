@@ -19,12 +19,26 @@ use App\Http\Controllers\Admin\ReplaceTemplateController;
 Route::get('/', function () {
     // Ambil 8 script terbaru
     $latestScripts = Script::with(['category', 'user'])
-        ->latest()
+        ->where(function ($query) {
+            $query->where('status', 'published') // Tayang langsung (termasuk data lama)
+                  ->orWhere(function ($q) {
+                      $q->where('status', 'scheduled')
+                        ->where('published_at', '<=', now()); // Tayang HANYA jika jadwal sudah lewat
+                  });
+        })
+        ->latest('created_at')
         ->take(8)
         ->get();
 
-    // Ambil 8 script secara acak (Random)
+    // Ambil 8 script populer
     $popularScripts = Script::with(['category', 'user'])
+        ->where(function ($query) {
+            $query->where('status', 'published')
+                  ->orWhere(function ($q) {
+                      $q->where('status', 'scheduled')
+                        ->where('published_at', '<=', now());
+                  });
+        })
         ->orderByDesc('views')
         ->take(8)
         ->get();
@@ -33,13 +47,11 @@ Route::get('/', function () {
 })->name('home');
 
 
-// --- PERBAIKAN DI SINI ---
-// Pisahkan proses load relasi sebelum dikirim ke view
+// --- DETAIL SCRIPT ---
 Route::get('/script/{script:slug}', function (Script $script) {
     $script->timestamps = false;
     $script->increment('views'); 
     
-    // Load relasi 
     $script->load([
         'category', 
         'user', 
@@ -52,7 +64,7 @@ Route::get('/script/{script:slug}', function (Script $script) {
 })->name('script.show');
 
 
-// Rute untuk Submit Komentar (Hanya bisa diakses kalau user sudah Login)
+// --- KOMENTAR SCRIPT ---
 Route::post('/script/{script}/comment', [ScriptCommentController::class, 'store'])
     ->name('script.comment.store')
     ->middleware('auth');
@@ -62,6 +74,7 @@ Route::delete('/comment/{comment}', [ScriptCommentController::class, 'destroy'])
     ->middleware('auth');
 
 
+// --- PROFIL USER ---
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
@@ -69,6 +82,7 @@ Route::middleware('auth')->group(function () {
 });
 
 
+// --- SOCIALITE LOGIN ---
 Route::get('/auth/{provider}', [SocialiteController::class, 'redirect'])->name('socialite.redirect');
 Route::get('/auth/{provider}/callback', [SocialiteController::class, 'callback'])->name('socialite.callback');
 
@@ -77,7 +91,6 @@ require __DIR__.'/auth.php';
 
 // --- GRUP ADMIN ---
 Route::prefix('admin')->middleware(['auth', 'super_admin'])->name('admin.')->group(function () {
-    
     Route::get('/', function () {
         return view('admin.dashboard'); 
     })->name('dashboard');
@@ -91,9 +104,7 @@ Route::prefix('admin')->middleware(['auth', 'super_admin'])->name('admin.')->gro
     Route::patch('communities/{community}/pin', [AdminCommunityController::class, 'togglePin'])->name('communities.pin');
     Route::delete('communities/{community}', [AdminCommunityController::class, 'destroy'])->name('communities.destroy');
     
-    // Ini rute yang error tadi. Ditulis dengan cara yang lebih bersih.
     Route::resource('replace_templates', ReplaceTemplateController::class)->except(['show']);
-  
 });
 
 
@@ -104,7 +115,18 @@ Route::get('/categories', function () {
 })->name('categories.index');
 
 Route::get('/category/{category:slug}', function (Category $category) {
-    $scripts = $category->scripts()->with(['category', 'user'])->latest()->paginate(12);
+    $scripts = $category->scripts()
+        ->with(['category', 'user'])
+        ->where(function ($query) {
+            $query->where('status', 'published')
+                  ->orWhere(function ($q) {
+                      $q->where('status', 'scheduled')
+                        ->where('published_at', '<=', now());
+                  });
+        })
+        ->latest('created_at')
+        ->paginate(12);
+        
     return view('category-scripts', compact('category', 'scripts'));
 })->name('categories.show');
 
@@ -118,9 +140,18 @@ Route::get('/search', function () {
     }
 
     $scripts = Script::with(['category', 'user'])
-        ->where('title', 'LIKE', "%{$query}%")
-        ->orWhere('slug', 'LIKE', "%{$query}%")
-        ->latest()
+        ->where(function($q) use ($query) {
+            $q->where('title', 'LIKE', "%{$query}%")
+              ->orWhere('slug', 'LIKE', "%{$query}%");
+        })
+        ->where(function ($query) {
+            $query->where('status', 'published')
+                  ->orWhere(function ($q) {
+                      $q->where('status', 'scheduled')
+                        ->where('published_at', '<=', now());
+                  });
+        })
+        ->latest('created_at')
         ->paginate(12);
 
     $scripts->appends(['q' => $query]);
@@ -142,12 +173,11 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/dashboard', function () {
         $user = auth()->user();
-        
         $myScripts = Script::with('category')->where('user_id', $user->id)->latest()->get();
         $myPosts = \App\Models\Community::where('user_id', $user->id)->latest()->get();
         
         return view('dashboard', compact('user', 'myScripts', 'myPosts'));
-    })->name('user.dashboard'); // Ganti nama route agar tidak bentrok dengan admin.dashboard
+    })->name('user.dashboard'); 
 });
 
 
@@ -174,21 +204,27 @@ Route::get('/check-download', function () {
     return response()->json(Cache::get('latest_global_download'));
 })->name('check.download');
 
-Route::get('/all-script', function (\Illuminate\Http\Request $request) {
-    // Ambil data dengan paginasi (misal 12 data per load)
-    $scripts = \App\Models\Script::with(['category', 'user'])->latest()->paginate(12);
 
-    // Jika request datang dari Javascript (saat user scroll ke bawah)
+// --- SEMUA SCRIPT (INFINITE SCROLL) ---
+Route::get('/all-script', function (Request $request) {
+    $scripts = Script::with(['category', 'user'])
+        ->where(function ($query) {
+            $query->where('status', 'published')
+                  ->orWhere(function ($q) {
+                      $q->where('status', 'scheduled')
+                        ->where('published_at', '<=', now());
+                  });
+        })
+        ->latest('created_at')
+        ->paginate(12);
+
     if ($request->ajax()) {
-        // Render view partials saja, lalu kirim dalam bentuk JSON
         $view = view('partials.script-cards', compact('scripts'))->render();
-        
         return response()->json([
             'html' => $view,
             'hasMore' => $scripts->hasMorePages()
         ]);
     }
 
-    // Jika load halaman pertama kali
     return view('all-scripts', compact('scripts'));
 })->name('scripts.all');
