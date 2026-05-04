@@ -38,7 +38,7 @@
                     <p class="text-zinc-500 font-medium mb-8 leading-relaxed">
                         Rumah utama kami. Temukan tutorial, showcase script terbaru, dan konten eksklusif Kazeo Official.
                     </p>
-                    <a href="https://www.youtube.com/@KazeoOfficialNew20" target="_blank" class="mt-auto inline-flex justify-center items-center w-full px-6 py-4 bg-zinc-900 text-white font-bold rounded-xl group-hover:bg-red-600 transition-colors shadow-md active:scale-95">
+                    <a href="https://www.youtube.com/@KazeoOfficial-x3s" target="_blank" class="mt-auto inline-flex justify-center items-center w-full px-6 py-4 bg-zinc-900 text-white font-bold rounded-xl group-hover:bg-red-600 transition-colors shadow-md active:scale-95">
                         Subscribe Now &rarr;
                     </a>
                 </div>

@@ -9,7 +9,7 @@
             
             <div class="space-y-4">
                 <div class="flex items-center gap-3 shrink-0">
-                    <img src="https://ui-avatars.com/api/?name=Kazeo&background=18181b&color=fff&rounded=true" alt="Kazeo Avatar" class="w-10 h-10 rounded-xl object-cover shadow-sm">
+                    <img src="https://yt3.googleusercontent.com/S6SnMk133TuXDksniPSbpxP0br9En73_l4ybTQKATkaHu1aULj-zbi-hJ2BDcHlxafQ1ugAGtIo=s160-c-k-c0x00ffffff-no-rj" alt="Kazeo Avatar" class="w-10 h-10 rounded-xl object-cover shadow-sm">
                     <span class="text-xl tracking-tight flex items-center">
                         <span class="font-black text-zinc-900">Kazeo</span><span class="font-light text-zinc-500 ml-1">Official</span>
                     </span>

@@ -10,7 +10,7 @@ class Community extends Model
     // protected $fillable = ['title', 'body'];
     // Mengizinkan semua kolom untuk diisi (membuka gembok Mass Assignment)
     protected $guarded = ['id'];
-
+    protected $fillable = [];
     public function user()
     {
         return $this->belongsTo(User::class);

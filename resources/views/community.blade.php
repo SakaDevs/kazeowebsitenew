@@ -27,7 +27,7 @@
             
             <div class="relative z-10">
                 <h1 class="text-2xl sm:text-3xl font-black text-zinc-900 tracking-tight flex items-center gap-2">
-                    <span>💬</span> Ruang Komunitas
+                Community Post
                 </h1>
                 <p class="mt-2 text-sm text-zinc-500 font-medium">Tempat nongkrong, diskusi, request mod, dan tanya jawab bareng member lain.</p>
             </div>
@@ -130,13 +130,13 @@
                                     <form action="{{ route('community.like', $post->id) }}" method="POST" class="m-0 p-0">
                                         @csrf
                                         <button type="submit" class="flex items-center gap-1.5 {{ $isLiked ? 'text-red-600' : 'hover:text-red-600' }} transition-colors">
-                                            <span class="text-lg leading-none">{{ $isLiked ? '❤️' : '🤍' }}</span>
+                
                                             <span>{{ $post->reactions->count() }} Suka</span>
                                         </button>
                                     </form>
 
                                     <button type="button" @click="showComments = !showComments" class="flex items-center gap-1.5 hover:text-blue-600 transition-colors">
-                                        <span class="text-lg leading-none">💬</span>
+                                
                                         <span>{{ $post->comments->count() }} Komentar</span>
                                     </button>
                                     
@@ -146,7 +146,7 @@
                                                 @csrf
                                                 @method('DELETE')
                                                 <button type="submit" class="flex items-center gap-1.5 text-zinc-500 hover:text-red-600 transition-colors" title="Hapus Postingan">
-                                                    <span class="text-lg leading-none">🗑️</span>
+                            
                                                     <span class="hidden sm:inline font-bold">Hapus</span>
                                                 </button>
                                             </form>
@@ -154,7 +154,7 @@
                                             <form action="{{ route('community.pin', $post->id) }}" method="POST" class="m-0 p-0">
                                                 @csrf
                                                 <button type="submit" class="flex items-center gap-1.5 {{ $post->is_pinned ? 'text-red-600 hover:text-zinc-500' : 'text-zinc-500 hover:text-red-600' }} transition-colors" title="{{ $post->is_pinned ? 'Lepas Sematan' : 'Sematkan Postingan' }}">
-                                                    <span class="text-lg leading-none">📌</span>
+                                
                                                     <span class="hidden sm:inline font-bold">{{ $post->is_pinned ? 'Unpin' : 'Pin' }}</span>
                                                 </button>
                                             </form>
@@ -226,7 +226,7 @@
                 <div class="bg-zinc-900 text-white p-6 sm:p-8 rounded-2xl shadow-sm relative overflow-hidden">
                     <div class="absolute -right-6 -bottom-6 w-24 h-24 bg-white/10 rounded-full blur-2xl"></div>
                     <h3 class="font-black text-lg mb-4 flex items-center gap-2">
-                        <span>📜</span> Aturan Komunitas
+                       Aturan Komunitas
                     </h3>
                     <ul class="space-y-3.5 text-sm text-zinc-300 font-medium">
                         <li class="flex items-start gap-2.5"><span class="text-red-500 font-bold mt-0.5">1.</span> Sopan dan saling menghargai.</li>
