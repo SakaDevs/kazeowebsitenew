@@ -119,7 +119,7 @@
                                     {{ $post->title }}
                                 </h3>
                                 <p class="text-zinc-600 text-sm line-clamp-4 mb-4 leading-relaxed">
-                                    {!! nl2br(e($post->content)) !!}
+                                    {!! nl2br(e($post->body)) !!}
                                 </p>
                                 
                                 <div class="flex items-center gap-4 sm:gap-6 text-zinc-500 text-sm font-medium pt-3 border-t border-zinc-100">
